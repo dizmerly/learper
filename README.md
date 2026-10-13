@@ -13,6 +13,8 @@ open .build/app/Learper.app
 
 The Swift Package can also be opened in Xcode from `Package.swift`. With a full Xcode installation, `swift build` and `swift test` are available. The build script uses `swiftc` directly so it also works on Macs with only Command Line Tools.
 
+Run the local format, session, and persistence smoke checks with `./scripts/smoke_test.sh`.
+
 ## Make a quiz with an agent
 
 Give the agent [the question format](docs/QUESTION_FORMAT.md) and your notes or topic. Save its JSON response as a `.json` file and choose **Import JSON** in the app. You can also copy the whole JSON object and choose **Paste JSON**. A matching set ID replaces the earlier imported set.

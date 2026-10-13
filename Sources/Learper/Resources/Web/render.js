@@ -10,7 +10,7 @@ const markdown = window.markdownit({
       ? window.hljs.highlight(code, { language: grammar, ignoreIllegals: true }).value
       : escaped;
     const label = grammar ? `<span class="code-label">${grammar}</span>` : '';
-    return `<div class="code-block">${label}<pre><code class="hljs">${highlighted}</code></pre></div>`;
+    return `<pre class="code-block">${label}<code class="hljs">${highlighted}</code></pre>`;
   }
 });
 

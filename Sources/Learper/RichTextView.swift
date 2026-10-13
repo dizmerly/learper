@@ -19,6 +19,7 @@ struct RichTextView: NSViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.underPageBackgroundColor = .clear
+        webView.setValue(false, forKey: "drawsBackground")
 
         if let url = QuizResources.bundle.url(
             forResource: "index", withExtension: "html", subdirectory: "Web"

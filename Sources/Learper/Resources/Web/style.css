@@ -48,13 +48,13 @@ code {
 .code-block {
   position: relative;
   margin: 0.6em 0 0.7em;
+  padding: 1.2em 1em;
   border: 1px solid var(--code-border);
   border-radius: 12px;
   background: var(--code-bg);
-  overflow: hidden;
+  overflow-x: auto;
 }
-.code-block pre { margin: 0; padding: 1.2em 1em; overflow-x: auto; }
-.code-block pre code { display: block; border: 0; padding: 0; background: transparent; white-space: pre; overflow-wrap: normal; }
+.code-block code { display: block; border: 0; padding: 0; background: transparent; white-space: pre; overflow-wrap: normal; }
 .code-label { position: absolute; top: 0.25em; right: 0.6em; color: var(--muted); font: 600 0.63em -apple-system, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
 .hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-type { color: var(--keyword); }
 .hljs-string, .hljs-attr, .hljs-template-string { color: var(--string); }
