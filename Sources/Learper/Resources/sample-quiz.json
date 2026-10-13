@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "id": "learper-welcome",
+  "title": "A little bit of everything",
+  "description": "Try math, code, hints, and answer feedback.",
+  "questions": [
+    {
+      "id": "math-1",
+      "question": "What is the derivative of $f(x) = x^2$?",
+      "description": "Choose the expression for $f'(x)$.",
+      "hints": ["Use the power rule: $\\frac{d}{dx}x^n = nx^{n-1}$.", "Here $n = 2$."],
+      "choices": [
+        { "id": "a", "text": "$x$" },
+        { "id": "b", "text": "$2x$" },
+        { "id": "c", "text": "$x^2$" },
+        { "id": "d", "text": "$2$" }
+      ],
+      "correctAnswerId": "b",
+      "explanation": "By the power rule, $\\frac{d}{dx}x^2 = 2x^{2-1} = 2x$.",
+      "image": null
+    },
+    {
+      "id": "python-1",
+      "question": "What does this Python code print?",
+      "description": "```python\nvalues = [1, 2, 3]\nprint(sum(values))\n```",
+      "hints": ["`sum` adds the elements of an iterable."],
+      "choices": [
+        { "id": "a", "text": "`3`" },
+        { "id": "b", "text": "`6`" },
+        { "id": "c", "text": "`[1, 2, 3]`" },
+        { "id": "d", "text": "An error" }
+      ],
+      "correctAnswerId": "b",
+      "explanation": "`sum(values)` evaluates to `1 + 2 + 3`, which is `6`.",
+      "image": null
+    },
+    {
+      "id": "rust-1",
+      "question": "Which Rust keyword introduces an immutable variable?",
+      "description": "Think about `let value = 42;`.",
+      "hints": ["The variable is immutable unless you add `mut`."],
+      "choices": [
+        { "id": "a", "text": "`var`" },
+        { "id": "b", "text": "`const`" },
+        { "id": "c", "text": "`let`" },
+        { "id": "d", "text": "`auto`" }
+      ],
+      "correctAnswerId": "c",
+      "explanation": "`let` creates a binding. In `let value = 42;`, the binding is immutable by default.",
+      "image": null
+    }
+  ]
+}
