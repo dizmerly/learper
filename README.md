@@ -13,7 +13,7 @@ open .build/app/Learper.app
 
 The Swift Package can also be opened in Xcode from `Package.swift`. With a full Xcode installation, `swift build` and `swift test` are available. The build script uses `swiftc` directly so it also works on Macs with only Command Line Tools.
 
-Run the local format, session, and persistence smoke checks with `./scripts/smoke_test.sh`.
+Run `./scripts/test.sh` for the full model, session, and persistence suite with a coverage report. It executes the same test cases through a small assertion adapter when only Command Line Tools are installed; Xcode uses XCTest directly via `swift test`. The quick integration smoke check remains available as `./scripts/smoke_test.sh`.
 
 ## Make a quiz with an agent
 
