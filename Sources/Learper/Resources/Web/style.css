@@ -1,0 +1,64 @@
+:root {
+  color-scheme: light dark;
+  --ink: #233141;
+  --muted: #607083;
+  --code-bg: rgba(20, 33, 49, 0.07);
+  --code-border: rgba(20, 33, 49, 0.11);
+  --keyword: #9750b5;
+  --string: #a84939;
+  --number: #286b9d;
+  --comment: #77889a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e7eef7;
+    --muted: #aebdcf;
+    --code-bg: rgba(7, 15, 27, 0.48);
+    --code-border: rgba(226, 239, 255, 0.14);
+    --keyword: #caa5f2;
+    --string: #f4aa96;
+    --number: #8ac7f3;
+    --comment: #8294a9;
+  }
+}
+
+html, body { margin: 0; padding: 0; background: transparent; }
+body {
+  color: var(--ink);
+  font: 400 1rem/1.58 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+p { margin: 0 0 0.55em; }
+p:last-child, ul:last-child, ol:last-child { margin-bottom: 0; }
+ul, ol { margin-top: 0.3em; padding-left: 1.5em; }
+li { margin: 0.2em 0; }
+strong { font-weight: 700; }
+em { font-style: italic; }
+blockquote { margin: 0.5em 0; padding-left: 0.8em; border-left: 3px solid #79a7d1; color: var(--muted); }
+a { color: #397fbd; text-decoration: none; }
+code {
+  font: 0.87em/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  background: var(--code-bg);
+  padding: 0.1em 0.32em;
+}
+.code-block {
+  position: relative;
+  margin: 0.6em 0 0.7em;
+  border: 1px solid var(--code-border);
+  border-radius: 12px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+.code-block pre { margin: 0; padding: 1.2em 1em; overflow-x: auto; }
+.code-block pre code { display: block; border: 0; padding: 0; background: transparent; white-space: pre; overflow-wrap: normal; }
+.code-label { position: absolute; top: 0.25em; right: 0.6em; color: var(--muted); font: 600 0.63em -apple-system, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-type { color: var(--keyword); }
+.hljs-string, .hljs-attr, .hljs-template-string { color: var(--string); }
+.hljs-number, .hljs-literal, .hljs-symbol { color: var(--number); }
+.hljs-comment, .hljs-doctag { color: var(--comment); font-style: italic; }
+.hljs-title, .hljs-function, .hljs-variable { color: #3389a0; }
+.katex-display { margin: 0.6em 0; overflow-x: auto; overflow-y: hidden; }

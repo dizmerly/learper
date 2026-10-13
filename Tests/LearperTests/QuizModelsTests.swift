@@ -4,7 +4,7 @@ import XCTest
 
 final class QuizModelsTests: XCTestCase {
     func testBundledSampleDecodesAndValidates() throws {
-        let url = try XCTUnwrap(Bundle.module.url(forResource: "sample-quiz", withExtension: "json"))
+        let url = try XCTUnwrap(QuizResources.bundle.url(forResource: "sample-quiz", withExtension: "json"))
         let set = try QuizCodec.decode(Data(contentsOf: url))
         XCTAssertEqual(set.questions.count, 3)
         XCTAssertEqual(set.questions[0].correctChoice?.id, "b")

@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 @MainActor
 final class QuizLibrary: ObservableObject {
@@ -77,7 +78,7 @@ final class QuizLibrary: ObservableObject {
                 let saved = try JSONDecoder().decode([QuizSet].self, from: Data(contentsOf: storageURL))
                 for set in saved { try set.validate() }
                 sets = saved
-            } else if let sampleURL = Bundle.module.url(forResource: "sample-quiz", withExtension: "json") {
+            } else if let sampleURL = QuizResources.bundle.url(forResource: "sample-quiz", withExtension: "json") {
                 sets = [try QuizCodec.decode(Data(contentsOf: sampleURL))]
             }
             selectedSetID = sets.first?.id
