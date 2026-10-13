@@ -15,9 +15,9 @@ The Swift Package can also be opened in Xcode from `Package.swift`. With a full 
 
 Run `./scripts/test.sh` for the full model, session, and persistence suite with a coverage report. It executes the same test cases through a small assertion adapter when only Command Line Tools are installed; Xcode uses XCTest directly via `swift test`. The quick integration smoke check remains available as `./scripts/smoke_test.sh`.
 
-## Make a quiz with an agent
+## Make a quiz with any chatbot
 
-Give the agent [the question format](docs/QUESTION_FORMAT.md) and your notes or topic. Save its JSON response as a `.json` file and choose **Import JSON** in the app. You can also copy the whole JSON object and choose **Paste JSON**. A matching set ID replaces the earlier imported set.
+Attach [the portable question format](docs/QUESTION_FORMAT.md) to a chatbot and give it your notes or topic. The format includes a request for the chatbot to attach a downloadable `learper-quiz.json` file. Download that file and choose **Import JSON** in Learper. The chatbot does not need to access the app or your computer. If a chat interface cannot create downloadable files, it can return JSON text for you to save or paste with **Paste JSON**. A matching set ID replaces the earlier imported set.
 
 The format includes question text, optional context, progressive hints, 2–6 choices, the correct choice ID, and an explanation. Rich text supports inline Markdown code, fenced code blocks in C, C++, Python, and Rust, plus inline `$...$` and display `$$...$$` LaTeX. Image metadata is reserved in the format, but images are not displayed in this version.
 

@@ -28,7 +28,7 @@ final class QuizLibrary: ObservableObject {
         panel.canChooseDirectories = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
-            try importData(Data(contentsOf: url))
+            try importURL(url)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -58,6 +58,10 @@ final class QuizLibrary: ObservableObject {
         try save(updated)
         sets = updated
         selectedSetID = set.id
+    }
+
+    func importURL(_ url: URL) throws {
+        try importData(Data(contentsOf: url))
     }
 
     func removeSelectedSet() {

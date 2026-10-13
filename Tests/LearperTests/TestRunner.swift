@@ -26,7 +26,8 @@ enum TestRunner {
                 ("testRemovingSelectedSetUpdatesSelectionAndDisk", QuizLibraryTests.testRemovingSelectedSetUpdatesSelectionAndDisk),
                 ("testCorruptLibraryReportsLoadError", QuizLibraryTests.testCorruptLibraryReportsLoadError),
                 ("testRemovingLastSetLeavesAnEmptySavedLibrary", QuizLibraryTests.testRemovingLastSetLeavesAnEmptySavedLibrary),
-                ("testSaveFailureDoesNotChangeInMemoryLibrary", QuizLibraryTests.testSaveFailureDoesNotChangeInMemoryLibrary)
+                ("testSaveFailureDoesNotChangeInMemoryLibrary", QuizLibraryTests.testSaveFailureDoesNotChangeInMemoryLibrary),
+                ("testImportsStandaloneChatbotJSONFile", QuizLibraryTests.testImportsStandaloneChatbotJSONFile)
             ])
         ])
     }
