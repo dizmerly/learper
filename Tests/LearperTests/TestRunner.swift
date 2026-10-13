@@ -18,7 +18,9 @@ enum TestRunner {
                 ("testCannotSubmitOrAdvanceWithoutAnswer", QuizSessionTests.testCannotSubmitOrAdvanceWithoutAnswer),
                 ("testHintsStopAtAvailableCountAndResetOnNextQuestion", QuizSessionTests.testHintsStopAtAvailableCountAndResetOnNextQuestion),
                 ("testWrongAnswerLocksSelectionAndCountsCorrectly", QuizSessionTests.testWrongAnswerLocksSelectionAndCountsCorrectly),
-                ("testCompletionAndRetry", QuizSessionTests.testCompletionAndRetry)
+                ("testCompletionAndRetry", QuizSessionTests.testCompletionAndRetry),
+                ("testNumberKeysAndSpaceActionFollowQuizState", QuizSessionTests.testNumberKeysAndSpaceActionFollowQuizState),
+                ("testStatisticsIdentifyMissedQuestionAndSelectedAnswer", QuizSessionTests.testStatisticsIdentifyMissedQuestionAndSelectedAnswer)
             ]),
             testCase([
                 ("testImportPersistsAndReplacesMatchingID", QuizLibraryTests.testImportPersistsAndReplacesMatchingID),

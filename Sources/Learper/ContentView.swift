@@ -6,6 +6,11 @@ private enum Palette {
     static let pink = Color(red: 0.80, green: 0.48, blue: 0.72)
 }
 
+private enum ResultsTab: String, CaseIterable {
+    case statistics = "Statistics"
+    case review = "All questions"
+}
+
 private struct GlassCard: ViewModifier {
     var radius: CGFloat = 24
 
@@ -41,6 +46,7 @@ struct ContentView: View {
     @EnvironmentObject private var library: QuizLibrary
     @State private var session: QuizSession?
     @State private var showingDeleteConfirmation = false
+    @State private var resultsTab: ResultsTab = .statistics
 
     var body: some View {
         NavigationSplitView {
@@ -81,6 +87,10 @@ struct ContentView: View {
                     .help("Import quiz JSON from the clipboard")
                 }
             }
+        }
+        .background {
+            QuizKeyboardView(onKey: handleQuizKey)
+                .allowsHitTesting(false)
         }
         .onAppear(perform: resetSession)
         .onChange(of: library.selectedSetID) { _ in resetSession() }
@@ -284,19 +294,22 @@ struct ContentView: View {
                     Spacer()
                     if session.hasSubmitted {
                         Button(session.isLastQuestion ? "See results" : "Next question") {
-                            mutateSession { $0.advance() }
+                            mutateSession { $0.primaryAction() }
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(Palette.blue)
                         .controlSize(.large)
                     } else {
-                        Button("Check answer") { mutateSession { $0.submit() } }
+                        Button("Check answer") { mutateSession { $0.primaryAction() } }
                             .buttonStyle(.borderedProminent)
                             .tint(Palette.blue)
                             .controlSize(.large)
                             .disabled(session.selectedChoiceID == nil)
                     }
                 }
+                Text("Press 1–4 to choose an answer. Press Space to check, then Space again to continue.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
             }
             .padding(28)
             .glassCard()
@@ -320,6 +333,7 @@ struct ContentView: View {
                     .background(selected || correct ? tint : Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 9))
                 RichTextView(markdown: choice.text, textSize: 14)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .allowsHitTesting(false)
                 if selected || correct {
                     Image(systemName: correct ? "checkmark.circle.fill" : (incorrect ? "xmark.circle.fill" : "circle.inset.filled"))
                         .foregroundStyle(tint)
@@ -336,9 +350,11 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 15)
                     .strokeBorder(selected || correct ? tint.opacity(0.5) : Color.primary.opacity(0.08), lineWidth: 1)
             }
+            .contentShape(RoundedRectangle(cornerRadius: 15))
         }
         .buttonStyle(.plain)
         .disabled(session.hasSubmitted)
+        .accessibilityLabel("Choice \(index + 1): \(choice.text)")
     }
 
     private func hintSection(for session: QuizSession) -> some View {
@@ -395,51 +411,135 @@ struct ContentView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Try again") { mutateSession { $0.restart() } }
+                Button("Try again") {
+                    resultsTab = .statistics
+                    mutateSession { $0.restart() }
+                }
                     .buttonStyle(.borderedProminent)
                     .tint(Palette.blue)
             }
             .padding(26)
             .glassCard()
 
-            Text("REVIEW")
-                .font(.system(size: 11, weight: .bold))
-                .tracking(1.7)
-                .foregroundStyle(.secondary)
-
-            ForEach(Array(session.quizSet.questions.enumerated()), id: \.element.id) { index, question in
-                VStack(alignment: .leading, spacing: 12) {
-                    let correct = session.answers[question.id] == question.correctAnswerId
-                    HStack {
-                        Label("Question \(index + 1)", systemImage: correct ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .foregroundStyle(correct ? Palette.mint : Palette.pink)
-                        Spacer()
-                        Text(correct ? "Correct" : "Review")
-                            .foregroundStyle(.secondary)
-                    }
-                    .font(.system(size: 12, weight: .semibold))
-                    RichTextView(markdown: question.question, textSize: 17)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    if let answer = question.correctChoice {
-                        HStack(alignment: .top, spacing: 8) {
-                            Text("ANSWER")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(.secondary)
-                            RichTextView(markdown: answer.text, textSize: 13)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                    RichTextView(markdown: question.explanation, textSize: 13)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            Picker("Results", selection: $resultsTab) {
+                ForEach(ResultsTab.allCases, id: \.self) { tab in
+                    Text(tab.rawValue).tag(tab)
                 }
-                .padding(22)
-                .glassCard(radius: 19)
             }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 320)
+
+            if resultsTab == .statistics {
+                statistics(for: session)
+            } else {
+                sectionHeading("ALL QUESTIONS")
+                ForEach(session.outcomes) { outcome in
+                    outcomeCard(outcome)
+                }
+            }
+        }
+    }
+
+    private func statistics(for session: QuizSession) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing: 12) {
+                statisticCard("\(session.correctCount)", label: "Correct", color: Palette.mint)
+                statisticCard("\(session.missedOutcomes.count)", label: "Missed", color: Palette.pink)
+                statisticCard("\(session.accuracyPercent)%", label: "Accuracy", color: Palette.blue)
+            }
+
+            sectionHeading("MISSED QUESTIONS")
+            if session.missedOutcomes.isEmpty {
+                Label("You got every question right.", systemImage: "checkmark.seal.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Palette.mint)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(25)
+                    .glassCard(radius: 19)
+            } else {
+                ForEach(session.missedOutcomes) { outcome in
+                    outcomeCard(outcome)
+                }
+            }
+        }
+    }
+
+    private func statisticCard(_ value: String, label: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(value)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(color)
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .glassCard(radius: 19)
+    }
+
+    private func sectionHeading(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 11, weight: .bold))
+            .tracking(1.7)
+            .foregroundStyle(.secondary)
+    }
+
+    private func outcomeCard(_ outcome: QuestionOutcome) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label(
+                    "Question \(outcome.number)",
+                    systemImage: outcome.isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill"
+                )
+                .foregroundStyle(outcome.isCorrect ? Palette.mint : Palette.pink)
+                Spacer()
+                Text(outcome.isCorrect ? "Correct" : "Missed")
+                    .foregroundStyle(.secondary)
+            }
+            .font(.system(size: 12, weight: .semibold))
+
+            RichTextView(markdown: outcome.question.question, textSize: 17)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            answerLine("YOUR ANSWER", text: outcome.selectedChoice.text)
+            if !outcome.isCorrect, let correctChoice = outcome.correctChoice {
+                answerLine("CORRECT ANSWER", text: correctChoice.text)
+            }
+            Divider()
+            RichTextView(markdown: outcome.question.explanation, textSize: 13)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(22)
+        .glassCard(radius: 19)
+    }
+
+    private func answerLine(_ label: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(label)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(.secondary)
+                .frame(width: 120, alignment: .leading)
+            RichTextView(markdown: text, textSize: 13)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
     private func resetSession() {
         session = library.selectedSet.map { QuizSession(quizSet: $0) }
+        resultsTab = .statistics
+    }
+
+    private func handleQuizKey(_ key: QuizKey) -> Bool {
+        guard let session, !session.showingResults else { return false }
+        switch key {
+        case .choice(let number):
+            guard !session.hasSubmitted, number <= session.question.choices.count else { return false }
+            mutateSession { $0.selectChoice(number: number) }
+        case .primaryAction:
+            mutateSession { $0.primaryAction() }
+        }
+        return true
     }
 
     private func mutateSession(_ mutation: (inout QuizSession) -> Void) {

@@ -54,6 +54,8 @@ final class QuizSessionTests: XCTestCase {
         }
         XCTAssertTrue(session.showingResults)
         XCTAssertEqual(session.correctCount, 3)
+        XCTAssertTrue(session.missedOutcomes.isEmpty)
+        XCTAssertEqual(session.accuracyPercent, 100)
         XCTAssertTrue(session.isLastQuestion)
 
         session.restart()
@@ -62,5 +64,54 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertFalse(session.hasSubmitted)
         XCTAssertFalse(session.showingResults)
         XCTAssertTrue(session.answers.isEmpty)
+    }
+
+    func testNumberKeysAndSpaceActionFollowQuizState() throws {
+        var session = QuizSession(quizSet: try TestFixtures.sampleSet())
+        session.primaryAction()
+        XCTAssertFalse(session.hasSubmitted)
+
+        session.selectChoice(number: 5)
+        XCTAssertNil(session.selectedChoiceID)
+        for (number, id) in [(1, "a"), (2, "b"), (3, "c"), (4, "d")] {
+            session.selectChoice(number: number)
+            XCTAssertEqual(session.selectedChoiceID, id)
+        }
+        session.selectChoice(number: 2)
+        XCTAssertEqual(session.selectedChoiceID, "b")
+        session.primaryAction()
+        XCTAssertTrue(session.hasSubmitted)
+        XCTAssertEqual(session.correctCount, 1)
+
+        session.selectChoice(number: 1)
+        XCTAssertEqual(session.selectedChoiceID, "b")
+        session.primaryAction()
+        XCTAssertEqual(session.questionIndex, 1)
+        XCTAssertNil(session.selectedChoiceID)
+    }
+
+    func testStatisticsIdentifyMissedQuestionAndSelectedAnswer() throws {
+        var session = QuizSession(quizSet: try TestFixtures.sampleSet())
+        let answers = ["a", "b", "c"]
+        for answer in answers {
+            session.select(answer)
+            session.primaryAction()
+            session.primaryAction()
+        }
+
+        XCTAssertTrue(session.showingResults)
+        XCTAssertEqual(session.outcomes.count, 3)
+        XCTAssertEqual(session.correctCount, 2)
+        XCTAssertEqual(session.missedOutcomes.count, 1)
+        XCTAssertEqual(session.accuracyPercent, 67)
+        XCTAssertEqual(session.missedOutcomes[0].number, 1)
+        XCTAssertEqual(session.missedOutcomes[0].selectedChoice.id, "a")
+        XCTAssertEqual(session.missedOutcomes[0].correctChoice?.id, "b")
+
+        session.primaryAction()
+        XCTAssertTrue(session.showingResults)
+        session.restart()
+        XCTAssertTrue(session.outcomes.isEmpty)
+        XCTAssertEqual(session.accuracyPercent, 0)
     }
 }
