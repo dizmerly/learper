@@ -87,8 +87,24 @@ final class WebCheck: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
                 })()
                 """) {
                 self.snapshot("graph-richtext") {
-                    self.stage = 1
-                    webView.loadFileURL(webRoot.appendingPathComponent("graph-editor.html"), allowingReadAccessTo: webRoot)
+                    self.check("""
+                        (() => {
+                          const source = 'Inline math: $x^2$.\\n'.repeat(40);
+                          render(source, 16);
+                          const tall = contentHeight();
+                          const firstNode = document.getElementById('content').firstChild;
+                          for (let i = 0; i < 100; i++) render(source, 16);
+                          const reused = firstNode === document.getElementById('content').firstChild;
+                          render(source, 18);
+                          const resizedWithoutParsing = firstNode === document.getElementById('content').firstChild;
+                          render('Short $x$.', 16);
+                          return reused && resizedWithoutParsing && contentHeight() < tall && contentHeight() < 100;
+                        })()
+                        """) {
+                        print("Repeated renders reuse DOM; content height shrinks after long questions")
+                        self.stage = 1
+                        webView.loadFileURL(webRoot.appendingPathComponent("graph-editor.html"), allowingReadAccessTo: webRoot)
+                    }
                 }
             }
         } else {

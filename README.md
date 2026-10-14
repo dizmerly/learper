@@ -69,4 +69,6 @@ The renderer bundles Markdown-it, KaTeX, and highlight.js under their included l
 
 ## Current scope
 
+Plain quiz text uses native SwiftUI text; Markdown, math, code, and graphs use WebKit. Results load rows lazily. The web renderer reuses unchanged content and batches height updates, measuring content independently of the viewport so shorter questions can shrink correctly. `scripts/test.sh` checks renderer routing and reports how many sample fields avoid WebKit; `scripts/graph_test.sh` checks DOM reuse, height shrinkage, and math/code/graph rendering in WebKit.
+
 Learper handles imported single-answer MCQs. Sessions run in memory; imported sets persist, while answers and scores reset when the app quits or a set is reopened. Image fields are accepted for forward compatibility and intentionally ignored by the renderer.

@@ -68,7 +68,7 @@ struct ContentView: View {
             ZStack {
                 ambientBackground
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 28) {
+                    LazyVStack(alignment: .leading, spacing: 28) {
                         if destination == .createQuiz {
                             promptHeader
                             promptPage
@@ -574,7 +574,7 @@ struct ContentView: View {
     }
 
     private func results(for session: QuizSession) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
+        LazyVStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 22) {
                 Image(systemName: "sparkles.rectangle.stack.fill")
                     .font(.system(size: 40))
@@ -617,7 +617,7 @@ struct ContentView: View {
     }
 
     private func statistics(for session: QuizSession) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
+        LazyVStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 12) {
                 statisticCard("\(session.correctCount)", label: "Correct", color: Palette.mint)
                 statisticCard("\(session.missedOutcomes.count)", label: "Missed", color: Palette.pink)

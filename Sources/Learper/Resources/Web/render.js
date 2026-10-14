@@ -24,12 +24,37 @@ markdown.renderer.rules.fence = function (tokens, index, options, env, renderer)
   return codeFence(tokens, index, options, env, renderer);
 };
 
+let heightFrame = null;
+let lastHeight = -1;
+let lastSource = null;
+let lastSize = null;
+
+function contentHeight() {
+  // Measure content, not the viewport: scrollHeight cannot reliably shrink after
+  // a tall question is replaced by a short one.
+  return Math.ceil(document.getElementById('content').getBoundingClientRect().height + 8);
+}
+
 function reportHeight() {
-  window.webkit?.messageHandlers.height.postMessage(Math.ceil(document.body.scrollHeight));
+  if (heightFrame !== null) return;
+  heightFrame = requestAnimationFrame(() => {
+    heightFrame = null;
+    const height = contentHeight();
+    if (height === lastHeight) return;
+    lastHeight = height;
+    window.webkit?.messageHandlers?.height?.postMessage(height);
+  });
 }
 
 function render(source, size) {
+  if (source === lastSource && size === lastSize) return;
   document.documentElement.style.fontSize = `${size}px`;
+  lastSize = size;
+  if (source === lastSource) {
+    reportHeight();
+    return;
+  }
+  lastSource = source;
   const root = document.getElementById('content');
   root.innerHTML = markdown.render(source);
   window.renderMathInElement(root, {
@@ -41,8 +66,8 @@ function render(source, size) {
     throwOnError: false,
     trust: false
   });
-  requestAnimationFrame(reportHeight);
+  reportHeight();
 }
 
-new ResizeObserver(reportHeight).observe(document.body);
+new ResizeObserver(reportHeight).observe(document.getElementById('content'));
 window.addEventListener('load', reportHeight);

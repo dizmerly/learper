@@ -7,6 +7,11 @@ enum TestRunner {
     static func main() {
         XCTMain([
             testCase([
+                ("testPlainAnswersAvoidWebKit", RichTextRenderingTests.testPlainAnswersAvoidWebKit),
+                ("testFormattedContentKeepsFullRenderer", RichTextRenderingTests.testFormattedContentKeepsFullRenderer),
+                ("testSampleWebViewReduction", RichTextRenderingTests.testSampleWebViewReduction)
+            ]),
+            testCase([
                 ("testGeneratedPromptIncludesCompleteFormatAndUserOptions", QuizPromptTests.testGeneratedPromptIncludesCompleteFormatAndUserOptions),
                 ("testBundledFormatMatchesDocumentedFormat", QuizPromptTests.testBundledFormatMatchesDocumentedFormat)
             ]),

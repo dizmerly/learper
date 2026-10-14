@@ -2,8 +2,26 @@ import AppKit
 import SwiftUI
 import WebKit
 
-/// A small, non-scrolling WebKit surface for Markdown, KaTeX, and code highlighting.
-struct RichTextView: NSViewRepresentable {
+/// Ordinary text avoids creating a browser and loading its rendering libraries.
+struct RichTextView: View {
+    let markdown: String
+    var textSize: CGFloat = 16
+
+    var body: some View {
+        if RichTextRendering.needsWebView(markdown) {
+            WebRichTextView(markdown: markdown, textSize: textSize)
+        } else {
+            Text(verbatim: markdown)
+                .font(.system(size: textSize))
+                .lineSpacing(textSize * 0.25)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, 8)
+        }
+    }
+}
+
+/// A non-scrolling WebKit surface for Markdown, KaTeX, and code highlighting.
+private struct WebRichTextView: NSViewRepresentable {
     let markdown: String
     var textSize: CGFloat = 16
     @ViewState private var height: CGFloat = 28
@@ -40,6 +58,8 @@ struct RichTextView: NSViewRepresentable {
     }
 
     static func dismantleNSView(_ webView: WKWebView, coordinator: Coordinator) {
+        webView.stopLoading()
+        webView.navigationDelegate = nil
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "height")
     }
 
@@ -77,7 +97,7 @@ struct RichTextView: NSViewRepresentable {
             _ userContentController: WKUserContentController,
             didReceive message: WKScriptMessage
         ) {
-            guard let value = message.body as? NSNumber else { return }
+            guard let value = message.body as? NSNumber, value.doubleValue.isFinite else { return }
             let measured = max(24, CGFloat(value.doubleValue))
             if abs(height.wrappedValue - measured) > 1 { height.wrappedValue = measured }
         }

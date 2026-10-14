@@ -16,6 +16,7 @@ swiftc \
   "$project_root/Sources/Learper/QuizModels.swift" \
   "$project_root/Sources/Learper/QuizResources.swift" \
   "$project_root/Sources/Learper/QuizPrompt.swift" \
+  "$project_root/Sources/Learper/RichTextRendering.swift" \
   "$project_root/Sources/Learper/QuizLibrary.swift" \
   "$project_root/Sources/Learper/QuizSession.swift" \
   -o "$output_dir/libLearper.dylib"

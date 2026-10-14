@@ -25,6 +25,7 @@
 
 html, body { margin: 0; background: transparent; }
 html { padding: 0; }
+#content { display: flow-root; }
 body {
   padding: 0 0 8px;
   color: var(--ink);
