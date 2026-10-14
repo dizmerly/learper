@@ -4,8 +4,8 @@ import Foundation
 enum SmokeTest {
     @MainActor
     static func main() throws {
-        guard CommandLine.arguments.count == 2 else {
-            fatalError("Pass the sample quiz JSON path")
+        guard CommandLine.arguments.count == 3 else {
+            fatalError("Pass the sample and graph quiz JSON paths")
         }
         let sampleData = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1]))
         let quiz = try QuizCodec.decode(sampleData)
@@ -45,6 +45,16 @@ enum SmokeTest {
             _ = try QuizCodec.decode(Data(badJSON.utf8))
             fatalError("Invalid answer ID was accepted")
         } catch QuizError.invalid { }
+
+        let graphData = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))
+        let graphQuiz = try QuizCodec.decode(graphData)
+        precondition(graphQuiz.questions.count == 3)
+        precondition(graphQuiz.questions.allSatisfy { $0.description?.contains("```graph") == true })
+        let roundTrippedGraphQuiz = try QuizCodec.decode(QuizCodec.encode(graphQuiz))
+        precondition(roundTrippedGraphQuiz == graphQuiz)
+        try library.importData(graphData)
+        let withGraphs = QuizLibrary(storageURL: temporary)
+        precondition(withGraphs.sets.contains(graphQuiz), "Graph text must survive import and persistence")
 
         print("Learper smoke checks passed")
     }

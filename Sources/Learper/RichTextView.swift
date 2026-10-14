@@ -6,7 +6,7 @@ import WebKit
 struct RichTextView: NSViewRepresentable {
     let markdown: String
     var textSize: CGFloat = 16
-    @State private var height: CGFloat = 28
+    @ViewState private var height: CGFloat = 28
 
     func makeCoordinator() -> Coordinator { Coordinator(height: $height) }
 

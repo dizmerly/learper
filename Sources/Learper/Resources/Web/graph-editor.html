@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="graph-editor.css">
+  <script src="graph.js"></script>
+</head>
+<body>
+  <div class="editor">
+    <section class="source-panel" aria-label="Graph source">
+      <label for="source">GRAPH TEXT</label>
+      <p>Write a path on each line. Repeated labels refer to the same vertex.</p>
+      <textarea id="source" spellcheck="false" autocapitalize="off" maxlength="12000" aria-describedby="syntax">a > b > c
+b > d > e</textarea>
+      <div class="examples">
+        <button data-example="branch">Branch</button>
+        <button data-example="cycle">Cycle</button>
+        <button data-example="undirected">Undirected</button>
+      </div>
+      <div id="syntax" class="syntax">
+        <p><code>a &gt; b</code> or <code>a -&gt; b</code> directed edge</p>
+        <p><code>a -- b</code> undirected edge</p>
+        <p><code>a &gt; b : 3</code> edge label or weight</p>
+        <p><code>"Start here" &gt; End</code> quoted label</p>
+        <p><code>z</code> isolated vertex</p>
+        <p><code>direction: TB</code> top to bottom</p>
+        <p><code>layout: circle</code> circular layout</p>
+        <p>Separate paths with newlines or semicolons. Add comments with <code>#</code>.</p>
+      </div>
+    </section>
+    <section class="preview-panel" aria-label="Graph preview">
+      <div class="preview-heading"><span>LIVE PREVIEW</span><span id="counts"></span></div>
+      <div id="preview"></div>
+      <p id="error" role="alert" hidden></p>
+      <div class="actions">
+        <button id="copy">Copy graph block</button>
+        <button id="export" class="primary">Export SVG…</button>
+      </div>
+      <p class="note">Paste the graph block into quiz text or give it to a chatbot. SVG exports are scalable images. Your draft is saved on this Mac.</p>
+      <p id="status" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <script src="graph-editor.js"></script>
+</body>
+</html>

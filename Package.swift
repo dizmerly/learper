@@ -8,7 +8,11 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Learper",
-            resources: [.process("Resources")]
+            resources: [
+                .copy("Resources/Web"),
+                .process("Resources/sample-quiz.json"),
+                .process("Resources/graph-theory-quiz.json")
+            ]
         ),
         .testTarget(name: "LearperTests", dependencies: ["Learper"])
     ]

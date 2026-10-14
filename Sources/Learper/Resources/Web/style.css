@@ -64,3 +64,10 @@ code {
 .hljs-comment, .hljs-doctag { color: var(--comment); font-style: italic; }
 .hljs-title, .hljs-function, .hljs-variable { color: #3389a0; }
 .katex-display { margin: 0.6em 0; overflow-x: auto; overflow-y: hidden; }
+.graph-diagram { margin: 0.7em 0; padding: 12px; border: 1px solid var(--code-border); border-radius: 14px; background: var(--code-bg); }
+.graph-scroll { overflow-x: auto; }
+.graph-scroll svg { display: block; max-width: 100%; height: auto; margin: auto; min-width: min(100%, 420px); }
+.graph-diagram figcaption { color: var(--muted); font-size: 0.75em; text-align: center; }
+.graph-error { border: 1px solid #b56550; padding: 12px; border-radius: 12px; margin: 0.7em 0; }
+.graph-error p { color: var(--muted); }
+.graph-error pre { overflow-x: auto; white-space: pre-wrap; font-size: 0.8em; }

@@ -44,9 +44,10 @@ private extension View {
 
 struct ContentView: View {
     @EnvironmentObject private var library: QuizLibrary
-    @State private var session: QuizSession?
-    @State private var showingDeleteConfirmation = false
-    @State private var resultsTab: ResultsTab = .statistics
+    @ViewState private var session: QuizSession?
+    @ViewState private var showingDeleteConfirmation = false
+    @ViewState private var resultsTab: ResultsTab = .statistics
+    @ViewState private var showingGraphEditor = false
 
     var body: some View {
         NavigationSplitView {
@@ -76,6 +77,11 @@ struct ContentView: View {
             }
             .toolbar {
                 ToolbarItemGroup {
+                    Button { showingGraphEditor = true } label: {
+                        Label("Create Graph", systemImage: "point.3.connected.trianglepath.dotted")
+                    }
+                    .help("Draw a graph from text")
+
                     Button { library.importFile() } label: {
                         Label("Import JSON", systemImage: "square.and.arrow.down")
                     }
@@ -94,6 +100,9 @@ struct ContentView: View {
         }
         .onAppear(perform: resetSession)
         .onChange(of: library.selectedSetID) { _ in resetSession() }
+        .sheet(isPresented: $showingGraphEditor) {
+            GraphEditorView()
+        }
         .alert("Could not load quiz", isPresented: Binding(
             get: { library.errorMessage != nil },
             set: { if !$0 { library.errorMessage = nil } }
@@ -531,7 +540,7 @@ struct ContentView: View {
     }
 
     private func handleQuizKey(_ key: QuizKey) -> Bool {
-        guard let session, !session.showingResults else { return false }
+        guard !showingGraphEditor, let session, !session.showingResults else { return false }
         switch key {
         case .choice(let number):
             guard !session.hasSubmitted, number <= session.question.choices.count else { return false }

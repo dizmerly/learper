@@ -7,7 +7,7 @@ app_path="$project_root/.build/app/Learper.app"
 binary_path="$app_path/Contents/MacOS/Learper"
 
 mkdir -p "$app_path/Contents/MacOS" "$app_path/Contents/Resources"
-swiftc \
+xcrun --sdk macosx swiftc \
   -target "$(uname -m)-apple-macos13.0" \
   -sdk "$sdk_path" \
   -O \

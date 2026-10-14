@@ -16,6 +16,14 @@ const markdown = window.markdownit({
 
 markdown.disable('image');
 
+const codeFence = markdown.renderer.rules.fence;
+markdown.renderer.rules.fence = function (tokens, index, options, env, renderer) {
+  if (tokens[index].info.trim().toLowerCase() === 'graph') {
+    return window.LearperGraph.render(tokens[index].content);
+  }
+  return codeFence(tokens, index, options, env, renderer);
+};
+
 function reportHeight() {
   window.webkit?.messageHandlers.height.postMessage(Math.ceil(document.body.scrollHeight));
 }
@@ -29,7 +37,7 @@ function render(source, size) {
       { left: '$$', right: '$$', display: true },
       { left: '$', right: '$', display: false }
     ],
-    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'svg'],
     throwOnError: false,
     trust: false
   });

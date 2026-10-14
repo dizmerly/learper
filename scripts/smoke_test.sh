@@ -17,4 +17,6 @@ swiftc \
   "$project_root/scripts/smoke_test.swift" \
   -o "$test_binary"
 
-"$test_binary" "$project_root/Sources/Learper/Resources/sample-quiz.json"
+"$test_binary" \
+  "$project_root/Sources/Learper/Resources/sample-quiz.json" \
+  "$project_root/Sources/Learper/Resources/graph-theory-quiz.json"

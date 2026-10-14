@@ -15,11 +15,39 @@ The Swift Package can also be opened in Xcode from `Package.swift`. With a full 
 
 Run `./scripts/test.sh` for the full model, session, and persistence suite with a coverage report. It executes the same test cases through a small assertion adapter when only Command Line Tools are installed; Xcode uses XCTest directly via `swift test`. The quick integration smoke check remains available as `./scripts/smoke_test.sh`.
 
+Run `./scripts/graph_test.sh` for graph parsing, layout, safety, and WebKit rendering checks. It uses macOS's built-in JavaScriptCore and WebKit; Node.js is not required. The views use a `ViewState` alias for SwiftUI's `State` property wrapper so SDKs that also expose a `State` macro still build with Command Line Tools.
+
 ## Make a quiz with any chatbot
 
 Attach [the portable question format](docs/QUESTION_FORMAT.md) to a chatbot and give it your notes or topic. The format includes a request for the chatbot to attach a downloadable `learper-quiz.json` file. Download that file and choose **Import JSON** in Learper. The chatbot does not need to access the app or your computer. If a chat interface cannot create downloadable files, it can return JSON text for you to save or paste with **Paste JSON**. A matching set ID replaces the earlier imported set.
 
 The format includes question text, optional context, progressive hints, 2–6 choices, the correct choice ID, and an explanation. Rich text supports inline Markdown code, fenced code blocks in C, C++, Python, and Rust, plus inline `$...$` and display `$$...$$` LaTeX. Image metadata is reserved in the format, but images are not displayed in this version.
+
+## Draw graphs from text
+
+Choose **Create Graph** to type or paste graph text and see a live preview. For example:
+
+```text
+a > b > c
+b > d > e
+```
+
+This draws five vertices and four directed edges, sharing vertex `b` across both paths. Use **Copy graph block** to copy a fenced `graph` block for quiz text, or **Export SVG…** to save a scalable image. The editor saves your latest draft locally.
+
+Chatbots can include the same text inside a fenced `graph` block in any question, context, hint, choice, or explanation. Learper parses the graph and draws its vertices and edges offline. No image generation, model call, or external service is involved. The [question format](docs/QUESTION_FORMAT.md#graphs) contains the full syntax and a JSON example.
+
+- `a > b` or `a -> b`: directed edge; chains such as `a > b > c` work.
+- `a -- b`: undirected edge; chains work here too.
+- `a > b : 3`: a label or weight on a single edge.
+- `"Start here" > End`: quote labels containing spaces or punctuation using JSON string escaping.
+- `z`: an isolated vertex. Repeated labels denote the same vertex; repeated identical edges are drawn once.
+- Separate paths with newlines or semicolons; start comments with `#`.
+- `direction: TB`: draw directed acyclic graphs from top to bottom (default `LR`).
+- `layout: circle`: request a circular layout. Cycles and undirected graphs use it automatically.
+
+Graphs support self-loops, reciprocal edges, and distinct labeled parallel edges. Invalid graph text shows an inline error with its line number when available. Limits are 80 vertices, 200 edges, 48 characters per label, and 12,000 source characters per graph. Large or dense graphs may need to be split for readability.
+
+Import [the graph theory example quiz](Sources/Learper/Resources/graph-theory-quiz.json) to try branching paths, a directed cycle, and weighted undirected edges in quiz questions.
 
 Click anywhere in an answer row to select it. Keyboard shortcuts **1–4** select the first four choices; **Space** checks the selected answer, then advances after feedback. After the last question, the **Statistics** tab shows correct, missed, and accuracy totals plus each missed question and its answers. **All questions** shows every answer and explanation.
 
@@ -32,6 +60,7 @@ Imported quizzes are saved in `~/Library/Application Support/Learper/library.jso
 - `Sources/Learper/QuizSession.swift`: answer, hint, and progress state.
 - `Sources/Learper/ContentView.swift`: SwiftUI interface.
 - `Sources/Learper/RichTextView.swift` and `Resources/Web`: offline rich-text rendering.
+- `Sources/Learper/GraphEditorView.swift` and `Resources/Web/graph.js`: graph editor, parser, layout, and SVG renderer.
 - `docs/QUESTION_FORMAT.md`: agent-facing generation contract.
 - `Tests/LearperTests`: model and quiz behavior tests.
 
