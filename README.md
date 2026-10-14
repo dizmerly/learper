@@ -19,7 +19,7 @@ Run `./scripts/graph_test.sh` for graph parsing, layout, safety, and WebKit rend
 
 ## Make a quiz with any chatbot
 
-Attach [the portable question format](docs/QUESTION_FORMAT.md) to a chatbot and give it your notes or topic. The format includes a request for the chatbot to attach a downloadable `learper-quiz.json` file. Download that file and choose **Import JSON** in Learper. The chatbot does not need to access the app or your computer. If a chat interface cannot create downloadable files, it can return JSON text for you to save or paste with **Paste JSON**. A matching set ID replaces the earlier imported set.
+Choose **Create with AI** in Learper's sidebar, enter a topic or notes, choose the question count and difficulty, and click **Copy full prompt**. Paste it into any chatbot. The prompt includes the complete [portable question format](docs/QUESTION_FORMAT.md) and asks for a downloadable `learper-quiz.json` file. Download that file and choose **Import JSON** in Learper. The chatbot does not need to access the app or your computer. If a chat interface cannot create downloadable files, it can return JSON text for you to save or paste with **Paste JSON**. A matching set ID replaces the earlier imported set.
 
 The format includes question text, optional context, progressive hints, 2–6 choices, the correct choice ID, and an explanation. Rich text supports inline Markdown code, fenced code blocks in C, C++, Python, and Rust, plus inline `$...$` and display `$$...$$` LaTeX. Image metadata is reserved in the format, but images are not displayed in this version.
 
@@ -59,6 +59,7 @@ Imported quizzes are saved in `~/Library/Application Support/Learper/library.jso
 - `Sources/Learper/QuizLibrary.swift`: JSON import and local persistence.
 - `Sources/Learper/QuizSession.swift`: answer, hint, and progress state.
 - `Sources/Learper/ContentView.swift`: SwiftUI interface.
+- `Sources/Learper/QuizPrompt.swift` and `Resources/QUESTION_FORMAT.md`: in-app prompt generation and bundled format.
 - `Sources/Learper/RichTextView.swift` and `Resources/Web`: offline rich-text rendering.
 - `Sources/Learper/GraphEditorView.swift` and `Resources/Web/graph.js`: graph editor, parser, layout, and SVG renderer.
 - `docs/QUESTION_FORMAT.md`: agent-facing generation contract.

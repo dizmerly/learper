@@ -11,7 +11,8 @@ let package = Package(
             resources: [
                 .copy("Resources/Web"),
                 .process("Resources/sample-quiz.json"),
-                .process("Resources/graph-theory-quiz.json")
+                .process("Resources/graph-theory-quiz.json"),
+                .process("Resources/QUESTION_FORMAT.md")
             ]
         ),
         .testTarget(name: "LearperTests", dependencies: ["Learper"])

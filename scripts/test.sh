@@ -5,6 +5,7 @@ project_root="${0:A:h:h}"
 sdk_path="$(xcrun --sdk macosx --show-sdk-path)"
 output_dir="$project_root/.build/tests"
 mkdir -p "$output_dir"
+cp "$project_root/Sources/Learper/Resources/QUESTION_FORMAT.md" "$output_dir/QUESTION_FORMAT.md"
 
 swiftc \
   -target "$(uname -m)-apple-macos13.0" \
@@ -14,6 +15,7 @@ swiftc \
   -module-name Learper \
   "$project_root/Sources/Learper/QuizModels.swift" \
   "$project_root/Sources/Learper/QuizResources.swift" \
+  "$project_root/Sources/Learper/QuizPrompt.swift" \
   "$project_root/Sources/Learper/QuizLibrary.swift" \
   "$project_root/Sources/Learper/QuizSession.swift" \
   -o "$output_dir/libLearper.dylib"
@@ -36,6 +38,8 @@ swiftc \
   -o "$output_dir/learper-tests"
 
 LEARPER_SAMPLE_PATH="$project_root/Sources/Learper/Resources/sample-quiz.json" \
+LEARPER_PROMPT_PATH="$project_root/Sources/Learper/Resources/QUESTION_FORMAT.md" \
+LEARPER_PROMPT_DOC_PATH="$project_root/docs/QUESTION_FORMAT.md" \
 LLVM_PROFILE_FILE="$output_dir/learper.profraw" \
   "$output_dir/learper-tests"
 

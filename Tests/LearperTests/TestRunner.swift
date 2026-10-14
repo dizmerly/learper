@@ -7,6 +7,10 @@ enum TestRunner {
     static func main() {
         XCTMain([
             testCase([
+                ("testGeneratedPromptIncludesCompleteFormatAndUserOptions", QuizPromptTests.testGeneratedPromptIncludesCompleteFormatAndUserOptions),
+                ("testBundledFormatMatchesDocumentedFormat", QuizPromptTests.testBundledFormatMatchesDocumentedFormat)
+            ]),
+            testCase([
                 ("testSampleDecodesAndRoundTripsRichContent", QuizModelsTests.testSampleDecodesAndRoundTripsRichContent),
                 ("testRejectsUnsupportedVersionAndEmptySetFields", QuizModelsTests.testRejectsUnsupportedVersionAndEmptySetFields),
                 ("testRejectsDuplicateQuestionIDsAndMissingQuestionText", QuizModelsTests.testRejectsDuplicateQuestionIDsAndMissingQuestionText),

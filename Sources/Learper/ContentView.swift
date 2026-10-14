@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 private enum Palette {
@@ -9,6 +10,11 @@ private enum Palette {
 private enum ResultsTab: String, CaseIterable {
     case statistics = "Statistics"
     case review = "All questions"
+}
+
+private enum SidebarDestination {
+    case quiz
+    case createQuiz
 }
 
 private struct GlassCard: ViewModifier {
@@ -48,6 +54,11 @@ struct ContentView: View {
     @ViewState private var showingDeleteConfirmation = false
     @ViewState private var resultsTab: ResultsTab = .statistics
     @ViewState private var showingGraphEditor = false
+    @ViewState private var destination: SidebarDestination = .quiz
+    @ViewState private var promptTopic = ""
+    @ViewState private var promptQuestionCount = 10
+    @ViewState private var promptDifficulty: QuizDifficulty = .intermediate
+    @ViewState private var promptCopied = false
 
     var body: some View {
         NavigationSplitView {
@@ -58,15 +69,20 @@ struct ContentView: View {
                 ambientBackground
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
-                        header
-                        if let session {
-                            if session.showingResults {
-                                results(for: session)
-                            } else {
-                                practice(for: session)
-                            }
+                        if destination == .createQuiz {
+                            promptHeader
+                            promptPage
                         } else {
-                            emptyState
+                            header
+                            if let session {
+                                if session.showingResults {
+                                    results(for: session)
+                                } else {
+                                    practice(for: session)
+                                }
+                            } else {
+                                emptyState
+                            }
                         }
                     }
                     .frame(maxWidth: 820)
@@ -99,7 +115,17 @@ struct ContentView: View {
                 .allowsHitTesting(false)
         }
         .onAppear(perform: resetSession)
-        .onChange(of: library.selectedSetID) { _ in resetSession() }
+        .onChange(of: library.selectedSetID) { _ in
+            resetSession()
+            destination = .quiz
+        }
+        .onChange(of: library.sets) { _ in
+            resetSession()
+            destination = .quiz
+        }
+        .onChange(of: promptTopic) { _ in promptCopied = false }
+        .onChange(of: promptQuestionCount) { _ in promptCopied = false }
+        .onChange(of: promptDifficulty) { _ in promptCopied = false }
         .sheet(isPresented: $showingGraphEditor) {
             GraphEditorView()
         }
@@ -145,6 +171,7 @@ struct ContentView: View {
                     ForEach(library.sets) { set in
                         Button {
                             library.selectedSetID = set.id
+                            destination = .quiz
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "rectangle.stack.fill")
@@ -174,6 +201,21 @@ struct ContentView: View {
             }
 
             Divider().padding(.horizontal, 18)
+            Button {
+                destination = .createQuiz
+            } label: {
+                Label("Create with AI", systemImage: "sparkles.rectangle.stack")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 13)
+                    .padding(.vertical, 12)
+                    .background(
+                        destination == .createQuiz ? Palette.blue.opacity(0.14) : .clear,
+                        in: RoundedRectangle(cornerRadius: 13)
+                    )
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 12)
+
             Button { library.importFile() } label: {
                 Label("Import quiz", systemImage: "plus.circle.fill")
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -237,6 +279,130 @@ struct ContentView: View {
                 .help("Quiz actions")
             }
         }
+    }
+
+    private var promptHeader: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("CREATE A QUIZ")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .tracking(2)
+                .foregroundStyle(Palette.blue)
+            Text("Ask any chatbot")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .tracking(-0.8)
+            Text("Set your topic, copy the full prompt, then import the JSON file your chatbot makes.")
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var promptPage: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 17) {
+                Text("WHAT SHOULD THE QUIZ COVER?")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1.5)
+                    .foregroundStyle(Palette.blue)
+
+                Text("Enter a topic, paste notes, or describe what you want to practice.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+
+                TextEditor(text: $promptTopic)
+                    .font(.system(size: 14))
+                    .frame(height: 90)
+                    .scrollContentBackground(.hidden)
+                    .padding(10)
+                    .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(Color.primary.opacity(0.10), lineWidth: 1)
+                    }
+                    .accessibilityLabel("Topic, notes, or source material")
+
+                HStack(spacing: 22) {
+                    Stepper("Questions: \(promptQuestionCount)", value: $promptQuestionCount, in: 1...100)
+                        .frame(maxWidth: 210)
+                    Picker("Difficulty", selection: $promptDifficulty) {
+                        ForEach(QuizDifficulty.allCases) { difficulty in
+                            Text(difficulty.rawValue).tag(difficulty)
+                        }
+                    }
+                    .frame(maxWidth: 260)
+                }
+
+                HStack(spacing: 12) {
+                    Button {
+                        guard let prompt = generatedPrompt else { return }
+                        NSPasteboard.general.clearContents()
+                        promptCopied = NSPasteboard.general.setString(prompt, forType: .string)
+                    } label: {
+                        Label("Copy full prompt", systemImage: "doc.on.doc")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Palette.blue)
+                    .disabled(promptTopic.trimmed.isEmpty || generatedPrompt == nil)
+
+                    if promptCopied {
+                        Label("Copied", systemImage: "checkmark.circle.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Palette.mint)
+                    }
+                }
+            }
+            .padding(26)
+            .glassCard()
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("HOW IT WORKS")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1.5)
+                    .foregroundStyle(Palette.blue)
+                Text("1. Paste the copied prompt into any chatbot.\n2. Download its learper-quiz.json file.\n3. Import that file here, or use Paste JSON if it returned text.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .lineSpacing(6)
+                HStack(spacing: 12) {
+                    Button("Import JSON…") { library.importFile() }
+                    Button("Paste JSON") { library.importClipboard() }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(26)
+            .glassCard()
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("PROMPT PREVIEW")
+                    .font(.system(size: 10, weight: .bold))
+                    .tracking(1.5)
+                    .foregroundStyle(Palette.blue)
+                if let prompt = generatedPrompt {
+                    ScrollView {
+                        Text(verbatim: prompt)
+                            .font(.system(size: 12, design: .monospaced))
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(height: 300)
+                } else {
+                    Text("The bundled quiz format could not be loaded.")
+                        .foregroundStyle(Palette.pink)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(26)
+            .glassCard()
+        }
+    }
+
+    private var generatedPrompt: String? {
+        guard let format = QuizPrompt.formatDocument else { return nil }
+        return QuizPrompt.make(
+            topic: promptTopic.trimmed.isEmpty ? "[topic or supplied notes]" : promptTopic,
+            questionCount: promptQuestionCount,
+            difficulty: promptDifficulty,
+            format: format
+        )
     }
 
     private var emptyState: some View {
@@ -540,7 +706,8 @@ struct ContentView: View {
     }
 
     private func handleQuizKey(_ key: QuizKey) -> Bool {
-        guard !showingGraphEditor, let session, !session.showingResults else { return false }
+        guard destination == .quiz, !showingGraphEditor,
+              let session, !session.showingResults else { return false }
         switch key {
         case .choice(let number):
             guard !session.hasSubmitted, number <= session.question.choices.count else { return false }
