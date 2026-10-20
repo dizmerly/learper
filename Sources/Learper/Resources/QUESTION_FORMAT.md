@@ -4,11 +4,11 @@ Give this document to any chatbot. Learper imports its JSON output locally; no a
 
 ## Request to paste into a chatbot
 
-> Create a Learper v1 [quiz type] quiz about **[topic or supplied notes]** with **[number]** questions at **[difficulty]** difficulty. Use `"type": "[quiz type id]"` and follow only the matching question shape below. Create and attach a downloadable UTF-8 file named `learper-quiz.json` containing one JSON object, with no Markdown fences or commentary. If you cannot attach a file, provide the complete JSON in one `json` code block. If the source material is insufficient, say so instead of inventing facts. Use fenced `mermaid` blocks for diagrams when helpful; do not use image URLs.
+> Create a Learper v1 [quiz type] quiz about **[topic or supplied notes]** with **[number]** questions at **[difficulty]** difficulty. [selection instruction] Use `"type": "[quiz type id]"` and follow only the matching question shape below. Set `"weight": 1` on every new question; when revising an existing quiz, preserve each supplied question weight unless changing it is explicitly requested. Create and attach a downloadable UTF-8 file named `learper-quiz.json` containing one JSON object, with no Markdown fences or commentary. If you cannot attach a file, provide the complete JSON in one `json` code block. If the source material is insufficient, say so instead of inventing facts. Use fenced `mermaid` blocks for diagrams when helpful; do not use image URLs.
 
 ## Common fields
 
-The top-level object has `version` (always `1`), a unique `id`, a nonempty `title`, optional `description`, `type` (`"mcq"` or `"saq"`), and a nonempty `questions` array. Question IDs must be unique within a set. Each question has a nonempty `question`, optional `description`, and a `hints` array (use `[]` when there are no hints). Importing the same set ID replaces the earlier set. Old files without `type` still import as MCQ.
+The top-level object has `version` (always `1`), a unique `id`, a nonempty `title`, optional `description`, `type` (`"mcq"` or `"saq"`), and a nonempty `questions` array. Question IDs must be unique within a set. Each question has a nonempty `question`, optional `description`, a `hints` array (use `[]` when there are no hints), and `weight` (start at `1`). Importing the same set ID replaces the earlier set. Old files without `type` still import as MCQ; old questions without `weight` start at `1`.
 
 ## Multiple choice (`"type": "mcq"`)
 
@@ -22,6 +22,7 @@ The top-level object has `version` (always `1`), a unique `id`, a nonempty `titl
     {
       "id": "q1",
       "question": "What is 2 + 2?",
+      "weight": 1,
       "hints": ["Add two to two."],
       "choices": [
         { "id": "a", "text": "3" },
@@ -29,12 +30,25 @@ The top-level object has `version` (always `1`), a unique `id`, a nonempty `titl
       ],
       "correctAnswerId": "b",
       "explanation": "Two plus two is four."
+    },
+    {
+      "id": "q2",
+      "question": "Which numbers are even? Select all that apply.",
+      "weight": 1,
+      "hints": [],
+      "choices": [
+        { "id": "a", "text": "2" },
+        { "id": "b", "text": "3" },
+        { "id": "c", "text": "4" }
+      ],
+      "correctAnswerIds": ["a", "c"],
+      "explanation": "Two and four are divisible by two."
     }
   ]
 }
 ```
 
-Each MCQ needs 2–6 choices with unique IDs and nonempty text, one matching `correctAnswerId`, and a nonempty `explanation`. Make distractors plausible. Keep the answer out of the question and choices. Learper grades each answer immediately.
+Each MCQ needs 2–6 choices with unique IDs and nonempty text, plus a nonempty `explanation`. For a single-answer question use one matching `correctAnswerId`. For a select-all-that-apply question, omit `correctAnswerId` and use `correctAnswerIds` with at least two distinct IDs from the choices. Never use both fields on one question. Learper lets the student toggle multiple choices and marks the answer correct only when the selected set matches every correct ID and contains no extra choices. Make distractors plausible. Keep the answer out of the question and choices. Learper grades each answer immediately.
 
 ## Short answer (`"type": "saq"`)
 
@@ -48,6 +62,7 @@ Each MCQ needs 2–6 choices with unique IDs and nonempty text, one matching `co
     {
       "id": "q1",
       "question": "Explain why 2 + 2 equals 4.",
+      "weight": 1,
       "hints": ["Think of two pairs."],
       "explanation": "A complete answer explains that two objects combined with two more form a set of four."
     }
@@ -55,7 +70,15 @@ Each MCQ needs 2–6 choices with unique IDs and nonempty text, one matching `co
 }
 ```
 
-SAQ questions have no `choices` or `correctAnswerId`. The optional `explanation` is reference answer or grading guidance; it is hidden while the student answers and included in the final text copied for chatbot grading. Make questions clear enough to assess from the student's written answer. Learper does not assign scores to SAQs.
+SAQ questions have no `choices`, `correctAnswerId`, or `correctAnswerIds`. The optional `explanation` is reference answer or grading guidance; it is hidden while the student answers and included in the final text copied for chatbot grading. Make questions clear enough to assess from the student's written answer. Learper does not assign scores to SAQs.
+
+## Practice weights
+
+Learper stores a weight on each question in the quiz JSON. The default is `1`; accepted values are `0.25` through `5`. After answering, the student rates how hard the question felt: **Easy** multiplies weight by `0.6`, **Moderate** by `0.85`, **Hard** by `1.5`, and **Impossible** by `2`. The result is rounded to two decimals and kept within the accepted range.
+
+Students can place quizzes in folders and practice every quiz in a folder together. New questions (all weight `1`) appear once in a random order. In later folder sessions, every question still appears once, while higher weights add more repeat draws and make a question more likely to be drawn. This is a weighted review loop using Anki-style self-ratings, rather than Anki's date-based FSRS scheduler.
+
+After practice, **Copy results for chatbot** includes the answers, ratings, updated weights, and an explanation of what the weights mean. **Export Updated JSON…** writes the current quiz, including its weights, to a new file. Learper also saves those weights in its local library JSON. The original downloaded import file is not edited automatically.
 
 ## Rich text and diagrams
 

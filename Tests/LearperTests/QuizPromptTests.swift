@@ -20,12 +20,15 @@ final class QuizPromptTests: XCTestCase {
         XCTAssertTrue(prompt.contains("**12** questions at **advanced**"))
         XCTAssertTrue(prompt.contains("downloadable UTF-8 file named `learper-quiz.json`"))
         XCTAssertTrue(prompt.contains("\"correctAnswerId\""))
+        XCTAssertTrue(prompt.contains("\"correctAnswerIds\""))
+        XCTAssertTrue(prompt.contains("Use single-answer questions only."))
         XCTAssertTrue(prompt.contains("\"explanation\""))
         XCTAssertTrue(prompt.contains("\"hints\""))
         XCTAssertTrue(prompt.contains("fenced `mermaid` blocks"))
         XCTAssertTrue(prompt.contains("LaTeX"))
         XCTAssertTrue(prompt.contains("does not fetch or display images"))
         XCTAssertTrue(prompt.contains("\"type\": \"mcq\""))
+        XCTAssertTrue(prompt.contains("\"weight\": 1"))
         XCTAssertFalse(prompt.contains("[topic or supplied notes]"))
         XCTAssertFalse(prompt.contains("[number]"))
         XCTAssertFalse(prompt.contains("[difficulty]"))
@@ -37,6 +40,13 @@ final class QuizPromptTests: XCTestCase {
         XCTAssertTrue(prompt.contains("Create a Learper v1 short-answer quiz"))
         XCTAssertTrue(prompt.contains("\"type\": \"saq\""))
         XCTAssertTrue(prompt.contains("SAQ questions have no `choices`"))
+    }
+
+    func testPromptCanRequestMultipleSelection() throws {
+        let prompt = QuizPrompt.make(topic: "Even numbers", questionCount: 5,
+                                     difficulty: .mixed, includeMultipleSelect: true, format: try bundledFormat())
+        XCTAssertTrue(prompt.contains("Include select-all-that-apply questions"))
+        XCTAssertTrue(prompt.contains("\"correctAnswerIds\": [\"a\", \"c\"]"))
     }
 
     func testBundledFormatMatchesDocumentedFormat() throws {

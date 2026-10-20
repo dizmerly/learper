@@ -11,21 +11,23 @@ enum QuizType: String, Codable, CaseIterable, Identifiable {
 struct QuizSet: Codable, Identifiable, Equatable {
     let version: Int
     let id: String
-    let title: String
+    var title: String
     let description: String?
-    let questions: [QuizQuestion]
+    var questions: [QuizQuestion]
     let type: QuizType
+    var groupID: String?
 
-    init(version: Int, id: String, title: String, description: String?, questions: [QuizQuestion], type: QuizType = .mcq) {
+    init(version: Int, id: String, title: String, description: String?, questions: [QuizQuestion], type: QuizType = .mcq, groupID: String? = nil) {
         self.version = version
         self.id = id
         self.title = title
         self.description = description
         self.questions = questions
         self.type = type
+        self.groupID = groupID
     }
 
-    private enum CodingKeys: String, CodingKey { case version, id, title, description, questions, type }
+    private enum CodingKeys: String, CodingKey { case version, id, title, description, questions, type, groupID }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -35,7 +37,8 @@ struct QuizSet: Codable, Identifiable, Equatable {
             title: try values.decode(String.self, forKey: .title),
             description: try values.decodeIfPresent(String.self, forKey: .description),
             questions: try values.decode([QuizQuestion].self, forKey: .questions),
-            type: try values.decodeIfPresent(QuizType.self, forKey: .type) ?? .mcq
+            type: try values.decodeIfPresent(QuizType.self, forKey: .type) ?? .mcq,
+            groupID: try values.decodeIfPresent(String.self, forKey: .groupID)
         )
     }
 
@@ -62,9 +65,13 @@ struct QuizSet: Codable, Identifiable, Equatable {
             guard questionIDs.insert(question.id).inserted else {
                 throw QuizError.invalid("Question id '\(question.id)' appears more than once.")
             }
+            guard question.weight.isFinite, (0.25...5).contains(question.weight) else {
+                throw QuizError.invalid("\(label)'s weight must be between 0.25 and 5.")
+            }
             if type == .saq {
-                guard question.choices.isEmpty, question.correctAnswerId.isEmpty else {
-                    throw QuizError.invalid("\(label) is short answer and cannot contain choices or correctAnswerId.")
+                guard question.choices.isEmpty, question.correctAnswerId.isEmpty,
+                      question.correctAnswerIds.isEmpty else {
+                    throw QuizError.invalid("\(label) is short answer and cannot contain choices or correct answers.")
                 }
                 continue
             }
@@ -81,35 +88,48 @@ struct QuizSet: Codable, Identifiable, Equatable {
                     throw QuizError.invalid("\(label) repeats choice id '\(choice.id)'.")
                 }
             }
-            guard choiceIDs.contains(question.correctAnswerId) else {
-                throw QuizError.invalid("\(label)'s correctAnswerId does not match a choice.")
+            if question.isMultipleSelection {
+                guard question.correctAnswerId.isEmpty,
+                      (2...question.choices.count).contains(question.correctAnswerIds.count),
+                      Set(question.correctAnswerIds).count == question.correctAnswerIds.count,
+                      question.correctAnswerIds.allSatisfy(choiceIDs.contains) else {
+                    throw QuizError.invalid("\(label)'s correctAnswerIds must contain at least two distinct choice IDs and cannot be combined with correctAnswerId.")
+                }
+            } else {
+                guard choiceIDs.contains(question.correctAnswerId) else {
+                    throw QuizError.invalid("\(label)'s correctAnswerId does not match a choice.")
+                }
             }
         }
     }
 }
 
 struct QuizQuestion: Codable, Identifiable, Equatable {
-    let id: String
+    var id: String
     let question: String
     let description: String?
     let hints: [String]
     let choices: [AnswerChoice]
     let correctAnswerId: String
+    let correctAnswerIds: [String]
     let explanation: String
     let image: QuestionImage?
+    var weight: Double
 
-    init(id: String, question: String, description: String? = nil, hints: [String], choices: [AnswerChoice] = [], correctAnswerId: String = "", explanation: String = "", image: QuestionImage? = nil) {
+    init(id: String, question: String, description: String? = nil, hints: [String], choices: [AnswerChoice] = [], correctAnswerId: String = "", correctAnswerIds: [String] = [], explanation: String = "", image: QuestionImage? = nil, weight: Double = 1) {
         self.id = id
         self.question = question
         self.description = description
         self.hints = hints
         self.choices = choices
         self.correctAnswerId = correctAnswerId
+        self.correctAnswerIds = correctAnswerIds
         self.explanation = explanation
         self.image = image
+        self.weight = weight
     }
 
-    private enum CodingKeys: String, CodingKey { case id, question, description, hints, choices, correctAnswerId, explanation, image }
+    private enum CodingKeys: String, CodingKey { case id, question, description, hints, choices, correctAnswerId, correctAnswerIds, explanation, image, weight }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -120,14 +140,36 @@ struct QuizQuestion: Codable, Identifiable, Equatable {
             hints: try values.decode([String].self, forKey: .hints),
             choices: try values.decodeIfPresent([AnswerChoice].self, forKey: .choices) ?? [],
             correctAnswerId: try values.decodeIfPresent(String.self, forKey: .correctAnswerId) ?? "",
+            correctAnswerIds: try values.decodeIfPresent([String].self, forKey: .correctAnswerIds) ?? [],
             explanation: try values.decodeIfPresent(String.self, forKey: .explanation) ?? "",
-            image: try values.decodeIfPresent(QuestionImage.self, forKey: .image)
+            image: try values.decodeIfPresent(QuestionImage.self, forKey: .image),
+            weight: try values.decodeIfPresent(Double.self, forKey: .weight) ?? 1
         )
     }
 
-    var correctChoice: AnswerChoice? {
-        choices.first { $0.id == correctAnswerId }
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(id, forKey: .id)
+        try values.encode(question, forKey: .question)
+        try values.encodeIfPresent(description, forKey: .description)
+        try values.encode(hints, forKey: .hints)
+        if !choices.isEmpty { try values.encode(choices, forKey: .choices) }
+        if !correctAnswerId.isEmpty { try values.encode(correctAnswerId, forKey: .correctAnswerId) }
+        if !correctAnswerIds.isEmpty { try values.encode(correctAnswerIds, forKey: .correctAnswerIds) }
+        if !explanation.isEmpty { try values.encode(explanation, forKey: .explanation) }
+        try values.encodeIfPresent(image, forKey: .image)
+        try values.encode(weight, forKey: .weight)
     }
+
+    var isMultipleSelection: Bool { !correctAnswerIds.isEmpty }
+    var correctIDs: Set<String> { Set(isMultipleSelection ? correctAnswerIds : [correctAnswerId]) }
+    var correctChoices: [AnswerChoice] { choices.filter { correctIDs.contains($0.id) } }
+    var correctChoice: AnswerChoice? { correctChoices.first }
+}
+
+struct QuizGroup: Codable, Identifiable, Equatable {
+    let id: String
+    var name: String
 }
 
 struct AnswerChoice: Codable, Identifiable, Equatable {

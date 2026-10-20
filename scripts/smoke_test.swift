@@ -20,6 +20,7 @@ enum SmokeTest {
         precondition(session.hasSubmitted && session.correctCount == 1)
         session.select("a")
         precondition(session.selectedChoiceID == "b")
+        session.rateCurrent(.moderate, updatedWeight: 0.85)
         session.advance()
         precondition(session.questionIndex == 1 && session.revealedHintCount == 0)
 

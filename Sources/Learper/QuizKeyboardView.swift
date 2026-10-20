@@ -4,6 +4,7 @@ import SwiftUI
 enum QuizKey {
     case choice(Int)
     case primaryAction
+    case navigate(Int)
 }
 
 /// Routes quiz shortcuts only to the Learper window that owns this view.
@@ -42,13 +43,20 @@ struct QuizKeyboardView: NSViewRepresentable {
                       !event.isARepeat,
                       event.modifierFlags.intersection([.command, .control, .option]).isEmpty
                 else { return event }
+                if let editor = window.firstResponder as? NSTextView, editor.isEditable { return event }
 
                 let handled: Bool
+                if event.keyCode == 123 || event.keyCode == 124 {
+                    return self.onKey(.navigate(event.keyCode == 123 ? -1 : 1)) ? nil : event
+                }
                 switch event.charactersIgnoringModifiers {
                 case "1": handled = self.onKey(.choice(1))
                 case "2": handled = self.onKey(.choice(2))
                 case "3": handled = self.onKey(.choice(3))
                 case "4": handled = self.onKey(.choice(4))
+                case "5": handled = self.onKey(.choice(5))
+                case "6": handled = self.onKey(.choice(6))
+                case "7": handled = self.onKey(.choice(7))
                 case " ": handled = self.onKey(.primaryAction)
                 default: return event
                 }

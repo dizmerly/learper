@@ -22,13 +22,18 @@ enum QuizPrompt {
         questionCount: Int,
         difficulty: QuizDifficulty,
         type: QuizType = .mcq,
+        includeMultipleSelect: Bool = false,
         format: String
     ) -> String {
-        format
+        let selectionInstruction = type == .saq ? "" : includeMultipleSelect
+            ? "Include select-all-that-apply questions with two or more correct choices alongside single-answer questions."
+            : "Use single-answer questions only."
+        return format
             .replacingOccurrences(of: "[number]", with: String(questionCount))
             .replacingOccurrences(of: "[difficulty]", with: difficulty.rawValue.lowercased())
             .replacingOccurrences(of: "[quiz type]", with: type == .mcq ? "multiple-choice" : "short-answer")
             .replacingOccurrences(of: "[quiz type id]", with: type.rawValue)
             .replacingOccurrences(of: "[topic or supplied notes]", with: topic.trimmed)
+            .replacingOccurrences(of: "[selection instruction]", with: selectionInstruction)
     }
 }

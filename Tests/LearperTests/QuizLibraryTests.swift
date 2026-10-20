@@ -119,6 +119,39 @@ final class QuizLibraryTests: XCTestCase {
         XCTAssertEqual(QuizLibrary(storageURL: url).sets.map(\.id), ["second"])
     }
 
+    func testLegacyLibraryMigratesFoldersAndWeightsPersist() throws {
+        let url = TestFixtures.temporaryLibraryURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try JSONEncoder().encode([TestFixtures.set(id: "first")]).write(to: url)
+        let library = QuizLibrary(storageURL: url)
+        XCTAssertEqual(library.sets.map(\.id), ["first"])
+        library.createGroup(named: "  Biology  ")
+        let group = try XCTUnwrap(library.groups.first)
+        XCTAssertEqual(group.name, "Biology")
+        library.moveSet(id: "first", to: group.id)
+        XCTAssertEqual(library.sets(in: group.id).map(\.id), ["first"])
+        XCTAssertEqual(library.rateQuestion(setID: "first", questionID: "q1", rating: .hard), 1.5)
+
+        let saved = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any]
+        XCTAssertNotNil(saved?["sets"])
+        XCTAssertNotNil(saved?["groups"])
+        let reopened = QuizLibrary(storageURL: url)
+        XCTAssertEqual(reopened.groups, [group])
+        XCTAssertEqual(reopened.sets[0].questions[0].weight, 1.5)
+        XCTAssertEqual(reopened.sets[0].groupID, group.id)
+        reopened.moveSet(id: "first", to: nil)
+        XCTAssertEqual(reopened.sets(in: nil).map(\.id), ["first"])
+        XCTAssertTrue(reopened.sets(in: group.id).isEmpty)
+        XCTAssertNil(QuizLibrary(storageURL: url).sets[0].groupID)
+        XCTAssertEqual(reopened.groups, [group])
+        reopened.moveSet(id: "first", to: group.id)
+        reopened.removeGroup(id: group.id)
+        XCTAssertTrue(reopened.groups.isEmpty)
+        XCTAssertNil(reopened.sets[0].groupID)
+        XCTAssertEqual(reopened.sets[0].questions[0].weight, 1.5)
+    }
+
     private func emptyLibrary(at url: URL) throws -> QuizLibrary {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("[]".utf8).write(to: url)

@@ -96,8 +96,42 @@ final class QuizModelsTests: XCTestCase {
         XCTAssertEqual(roundTrip, set)
         let sample = try TestFixtures.sampleSet()
         XCTAssertEqual(sample.type, .mcq)
+        XCTAssertEqual(sample.questions[0].weight, 1)
         XCTAssertThrowsError(try QuizSet(version: 1, id: "bad", title: "Bad", description: nil,
                                          questions: [TestFixtures.question()], type: .saq).validate())
+    }
+
+    func testWeightValidationAndRoundTrip() throws {
+        var question = TestFixtures.question()
+        question.weight = 2.75
+        let set = TestFixtures.set(questions: [question])
+        let roundTrip = try QuizCodec.decode(QuizCodec.encode(set))
+        XCTAssertEqual(roundTrip.questions[0].weight, 2.75)
+        question.weight = 0
+        XCTAssertThrowsError(try TestFixtures.set(questions: [question]).validate())
+        question.weight = .infinity
+        XCTAssertThrowsError(try TestFixtures.set(questions: [question]).validate())
+    }
+
+    func testMultipleSelectionValidationAndRoundTrip() throws {
+        let choices = [AnswerChoice(id: "a", text: "Two"), AnswerChoice(id: "b", text: "Three"),
+                       AnswerChoice(id: "c", text: "Four")]
+        let question = QuizQuestion(id: "multi", question: "Which are even?", hints: [], choices: choices,
+                                    correctAnswerIds: ["a", "c"], explanation: "Two and four are even.")
+        let set = TestFixtures.set(questions: [question])
+        try set.validate()
+        let encoded = try QuizCodec.encode(set)
+        XCTAssertFalse(String(decoding: encoded, as: UTF8.self).contains("\"correctAnswerId\""))
+        let roundTrip = try QuizCodec.decode(encoded)
+        XCTAssertEqual(roundTrip, set)
+        XCTAssertEqual(question.correctIDs, Set(["a", "c"]))
+
+        let repeated = QuizQuestion(id: "multi", question: "Which are even?", hints: [], choices: choices,
+                                    correctAnswerIds: ["a", "a"], explanation: "Two is even.")
+        assertInvalid(TestFixtures.set(questions: [repeated]), contains: "correctAnswerIds")
+        let conflicting = QuizQuestion(id: "multi", question: "Which are even?", hints: [], choices: choices,
+                                       correctAnswerId: "a", correctAnswerIds: ["a", "c"], explanation: "Both.")
+        assertInvalid(TestFixtures.set(questions: [conflicting]), contains: "correctAnswerIds")
     }
 
     private func assertInvalid(

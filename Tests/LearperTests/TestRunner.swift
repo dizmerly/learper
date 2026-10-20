@@ -14,6 +14,7 @@ enum TestRunner {
             testCase([
                 ("testGeneratedPromptIncludesCompleteFormatAndUserOptions", QuizPromptTests.testGeneratedPromptIncludesCompleteFormatAndUserOptions),
                 ("testShortAnswerPromptSelectsSAQFormat", QuizPromptTests.testShortAnswerPromptSelectsSAQFormat),
+                ("testPromptCanRequestMultipleSelection", QuizPromptTests.testPromptCanRequestMultipleSelection),
                 ("testBundledFormatMatchesDocumentedFormat", QuizPromptTests.testBundledFormatMatchesDocumentedFormat)
             ]),
             testCase([
@@ -23,7 +24,9 @@ enum TestRunner {
                 ("testRejectsChoiceCountDuplicateIDsAndBadAnswer", QuizModelsTests.testRejectsChoiceCountDuplicateIDsAndBadAnswer),
                 ("testRejectsMalformedJSONAndMissingRequiredHints", QuizModelsTests.testRejectsMalformedJSONAndMissingRequiredHints),
                 ("testAcceptsReservedImageMetadataWithoutRequiringIt", QuizModelsTests.testAcceptsReservedImageMetadataWithoutRequiringIt),
-                ("testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ", QuizModelsTests.testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ)
+                ("testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ", QuizModelsTests.testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ),
+                ("testWeightValidationAndRoundTrip", QuizModelsTests.testWeightValidationAndRoundTrip),
+                ("testMultipleSelectionValidationAndRoundTrip", QuizModelsTests.testMultipleSelectionValidationAndRoundTrip)
             ]),
             testCase([
                 ("testCannotSubmitOrAdvanceWithoutAnswer", QuizSessionTests.testCannotSubmitOrAdvanceWithoutAnswer),
@@ -33,7 +36,13 @@ enum TestRunner {
                 ("testNumberKeysAndSpaceActionFollowQuizState", QuizSessionTests.testNumberKeysAndSpaceActionFollowQuizState),
                 ("testStatisticsIdentifyMissedQuestionAndSelectedAnswer", QuizSessionTests.testStatisticsIdentifyMissedQuestionAndSelectedAnswer),
                 ("testShortAnswerCompletionAndGradingPrompt", QuizSessionTests.testShortAnswerCompletionAndGradingPrompt),
-                ("testRenamingQuizKeepsSessionAnswers", QuizSessionTests.testRenamingQuizKeepsSessionAnswers)
+                ("testRenamingQuizKeepsSessionAnswers", QuizSessionTests.testRenamingQuizKeepsSessionAnswers),
+                ("testRatingsChangeWeightAndGateAdvancement", QuizSessionTests.testRatingsChangeWeightAndGateAdvancement),
+                ("testFolderPracticeCoversUnknownCardsAndCopiesWeightedResults", QuizSessionTests.testFolderPracticeCoversUnknownCardsAndCopiesWeightedResults),
+                ("testMultipleSelectionTogglesAndGradesExactSet", QuizSessionTests.testMultipleSelectionTogglesAndGradesExactSet),
+                ("testUnknownAnswerAppearsInResultsAndCannotBeChanged", QuizSessionTests.testUnknownAnswerAppearsInResultsAndCannotBeChanged),
+                ("testQuestionNavigationPreservesDraftsAndSubmittedAnswers", QuizSessionTests.testQuestionNavigationPreservesDraftsAndSubmittedAnswers),
+                ("testQuestionDotsSlideWithinTenQuestionWindow", QuizSessionTests.testQuestionDotsSlideWithinTenQuestionWindow)
             ]),
             testCase([
                 ("testImportPersistsAndReplacesMatchingID", QuizLibraryTests.testImportPersistsAndReplacesMatchingID),
@@ -43,7 +52,8 @@ enum TestRunner {
                 ("testRemovingLastSetLeavesAnEmptySavedLibrary", QuizLibraryTests.testRemovingLastSetLeavesAnEmptySavedLibrary),
                 ("testSaveFailureDoesNotChangeInMemoryLibrary", QuizLibraryTests.testSaveFailureDoesNotChangeInMemoryLibrary),
                 ("testImportsStandaloneChatbotJSONFile", QuizLibraryTests.testImportsStandaloneChatbotJSONFile),
-                ("testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection", QuizLibraryTests.testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection)
+                ("testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection", QuizLibraryTests.testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection),
+                ("testLegacyLibraryMigratesFoldersAndWeightsPersist", QuizLibraryTests.testLegacyLibraryMigratesFoldersAndWeightsPersist)
             ])
         ])
     }
