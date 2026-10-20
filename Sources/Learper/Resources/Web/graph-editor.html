@@ -5,37 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="graph-editor.css">
-  <script src="graph.js"></script>
+  <script src="vendor/mermaid/mermaid.min.js"></script>
 </head>
 <body>
   <div class="editor">
     <section class="source-panel" aria-label="Graph source">
-      <label for="source">GRAPH TEXT</label>
-      <p>Write a path on each line. Repeated labels refer to the same vertex.</p>
-      <textarea id="source" spellcheck="false" autocapitalize="off" maxlength="12000" aria-describedby="syntax">a > b > c
-b > d > e</textarea>
+      <label for="source">MERMAID TEXT</label>
+      <p>Write Mermaid syntax for a flowchart, sequence diagram, or another diagram type.</p>
+      <textarea id="source" spellcheck="false" autocapitalize="off" maxlength="12000" aria-describedby="syntax">flowchart LR
+  A[Start] --> B{Ready?}
+  B -- Yes --> C[Continue]</textarea>
       <div class="examples">
-        <button data-example="branch">Branch</button>
-        <button data-example="cycle">Cycle</button>
-        <button data-example="undirected">Undirected</button>
+        <button data-example="flowchart">Flowchart</button>
+        <button data-example="sequence">Sequence</button>
+        <button data-example="class">Class</button>
       </div>
       <div id="syntax" class="syntax">
-        <p><code>a &gt; b</code> or <code>a -&gt; b</code> directed edge</p>
-        <p><code>a -- b</code> undirected edge</p>
-        <p><code>a &gt; b : 3</code> edge label or weight</p>
-        <p><code>"Start here" &gt; End</code> quoted label</p>
-        <p><code>z</code> isolated vertex</p>
-        <p><code>direction: TB</code> top to bottom</p>
-        <p><code>layout: circle</code> circular layout</p>
-        <p>Separate paths with newlines or semicolons. Add comments with <code>#</code>.</p>
+        <p><code>flowchart LR</code> left-to-right flowchart</p>
+        <p><code>A --&gt; B</code> directed connection</p>
+        <p><code>A --- B</code> undirected connection</p>
+        <p><code>sequenceDiagram</code> sequence diagram</p>
+        <p><code>classDiagram</code> class diagram</p>
+        <p>Use standard Mermaid syntax. Diagrams are rendered locally.</p>
       </div>
     </section>
     <section class="preview-panel" aria-label="Graph preview">
-      <div class="preview-heading"><span>LIVE PREVIEW</span><span id="counts"></span></div>
+      <div class="preview-heading"><span>LIVE PREVIEW</span></div>
       <div id="preview"></div>
       <p id="error" role="alert" hidden></p>
       <div class="actions">
-        <button id="copy">Copy graph block</button>
+        <button id="copy">Copy Mermaid block</button>
         <button id="export" class="primary">Export SVG…</button>
       </div>
       <p class="note">Paste the graph block into quiz text or give it to a chatbot. SVG exports are scalable images. Your draft is saved on this Mac.</p>

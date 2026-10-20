@@ -239,7 +239,7 @@
       graph.edges.map(edge => `${edge.from} ${edge.directed ? 'to' : 'connected to'} ${edge.to}${edge.label ? ` (${edge.label})` : ''}`).join('; ');
     return `<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="${prefix}-title ${prefix}-desc" viewBox="${n(minX)} ${n(minY)} ${n(maxX - minX)} ${n(maxY - minY)}" width="${n(maxX - minX)}" height="${n(maxY - minY)}">` +
       `<title id="${prefix}-title">Graph</title><desc id="${prefix}-desc">${escape(description)}</desc>` +
-      `<style>.edge{fill:none;stroke:#577baf;stroke-width:2}.arrow{fill:#577baf}.vertex rect{fill:#edf3fc;stroke:#577baf;stroke-width:1.5}.vertex text,.edge-label{fill:#233141;font:15px -apple-system,BlinkMacSystemFont,sans-serif;text-anchor:middle}.edge-label{font-size:13px;paint-order:stroke;stroke:#fff;stroke-width:4;stroke-linejoin:round}@media(prefers-color-scheme:dark){.edge{stroke:#91b8ef}.arrow{fill:#91b8ef}.vertex rect{fill:#202e43;stroke:#91b8ef}.vertex text,.edge-label{fill:#e7eef7}.edge-label{stroke:#172336}}</style>` +
+      `<style>.edge{fill:none;stroke:#c49cf1;stroke-width:2}.arrow{fill:#c49cf1}.vertex rect{fill:#3d2b54;stroke:#bb91ed;stroke-width:1.5}.vertex text,.edge-label{fill:#f3eafa;font:15px -apple-system,BlinkMacSystemFont,sans-serif;text-anchor:middle}.edge-label{font-size:13px;paint-order:stroke;stroke:#171220;stroke-width:4;stroke-linejoin:round}</style>` +
       `<defs><marker id="${prefix}-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>${paths}${nodes}</svg>`;
   }
 

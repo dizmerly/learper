@@ -55,8 +55,8 @@
   assert(isolated.positions.size === 1 && Number.isFinite(isolated.height), 'A single vertex must render.');
   const quiz = JSON.parse(graphQuizSource);
   for (const question of quiz.questions) {
-    const source = question.description.match(/```graph\n([\s\S]*?)\n```/)[1];
-    assert(LearperGraph.parse(source).edges.length > 0, `The sample question ${question.id} must contain a valid graph.`);
+    const source = question.description.match(/```mermaid\n([\s\S]*?)\n```/)?.[1];
+    assert(source && source.startsWith('flowchart LR'), `The sample question ${question.id} must contain Mermaid flowchart text.`);
   }
   globalThis.graphTestCount = checks;
 })();

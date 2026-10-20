@@ -1,26 +1,13 @@
 :root {
-  color-scheme: light dark;
-  --ink: #233141;
-  --muted: #607083;
-  --code-bg: rgba(20, 33, 49, 0.07);
-  --code-border: rgba(20, 33, 49, 0.11);
-  --keyword: #9750b5;
-  --string: #a84939;
-  --number: #286b9d;
-  --comment: #77889a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #e7eef7;
-    --muted: #aebdcf;
-    --code-bg: rgba(7, 15, 27, 0.48);
-    --code-border: rgba(226, 239, 255, 0.14);
-    --keyword: #caa5f2;
-    --string: #f4aa96;
-    --number: #8ac7f3;
-    --comment: #8294a9;
-  }
+  color-scheme: dark;
+  --ink: #eee8f7;
+  --muted: #b8abc9;
+  --code-bg: rgba(38, 27, 54, 0.72);
+  --code-border: rgba(205, 171, 242, 0.22);
+  --keyword: #d6b0fb;
+  --string: #f2aeba;
+  --number: #a2cdf2;
+  --comment: #9d91ad;
 }
 
 html, body { margin: 0; background: transparent; }
@@ -39,8 +26,8 @@ ul, ol { margin-top: 0.3em; padding-left: 1.5em; }
 li { margin: 0.2em 0; }
 strong { font-weight: 700; }
 em { font-style: italic; }
-blockquote { margin: 0.5em 0; padding-left: 0.8em; border-left: 3px solid #79a7d1; color: var(--muted); }
-a { color: #397fbd; text-decoration: none; }
+blockquote { margin: 0.5em 0; padding-left: 0.8em; border-left: 3px solid #ab8acc; color: var(--muted); }
+a { color: #c89df4; text-decoration: none; }
 code {
   font: 0.87em/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
   border: 1px solid var(--code-border);
@@ -63,7 +50,7 @@ code {
 .hljs-string, .hljs-attr, .hljs-template-string { color: var(--string); }
 .hljs-number, .hljs-literal, .hljs-symbol { color: var(--number); }
 .hljs-comment, .hljs-doctag { color: var(--comment); font-style: italic; }
-.hljs-title, .hljs-function, .hljs-variable { color: #3389a0; }
+.hljs-title, .hljs-function, .hljs-variable { color: #9ad7df; }
 .katex-display { margin: 0.6em 0; overflow-x: auto; overflow-y: hidden; }
 .graph-diagram { margin: 0.7em 0; padding: 12px; border: 1px solid var(--code-border); border-radius: 14px; background: var(--code-bg); }
 .graph-scroll { overflow-x: auto; }
@@ -72,3 +59,7 @@ code {
 .graph-error { border: 1px solid #b56550; padding: 12px; border-radius: 12px; margin: 0.7em 0; }
 .graph-error p { color: var(--muted); }
 .graph-error pre { overflow-x: auto; white-space: pre-wrap; font-size: 0.8em; }
+.mermaid-diagram { margin: 0.7em 0; padding: 12px; border: 1px solid var(--code-border); border-radius: 14px; background: var(--code-bg); }
+.mermaid-scroll { overflow-x: auto; }
+.mermaid-scroll svg { display: block; max-width: 100%; height: auto; margin: auto; }
+.mermaid-error { color: #f3a0b6; font-size: 0.85em; white-space: pre-wrap; }

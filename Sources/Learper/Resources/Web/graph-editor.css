@@ -1,15 +1,15 @@
-body { padding: 0; overflow: auto; }
+body { padding: 0; overflow: auto; background: #171220; }
 .editor { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 24px; padding: 22px; }
 .source-panel, .preview-panel { min-width: 0; }
 label, .preview-heading { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; color: var(--muted); }
 .source-panel > p, .syntax, .note { font-size: 12px; color: var(--muted); }
 .source-panel > p { margin-top: 10px; }
 textarea { box-sizing: border-box; width: 100%; min-height: 165px; resize: vertical; border: 1px solid var(--code-border); border-radius: 12px; padding: 14px; background: var(--code-bg); color: var(--ink); font: 14px/1.7 ui-monospace, Menlo, monospace; }
-textarea:focus { outline: 2px solid #5796dc; outline-offset: 2px; }
+textarea:focus { outline: 2px solid #bb91ed; outline-offset: 2px; }
 button { border: 1px solid var(--code-border); border-radius: 8px; padding: 7px 11px; background: var(--code-bg); color: var(--ink); font: 12px -apple-system, sans-serif; cursor: pointer; }
 button:disabled { opacity: 0.45; cursor: default; }
-button:focus-visible { outline: 2px solid #5796dc; outline-offset: 2px; }
-.primary { background: #397fbd; color: white; }
+button:focus-visible { outline: 2px solid #bb91ed; outline-offset: 2px; }
+.primary { background: #8255b9; color: white; }
 .examples, .actions { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
 .syntax { margin-top: 18px; }
 .syntax p { margin-bottom: 8px; }

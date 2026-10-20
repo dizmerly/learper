@@ -87,6 +87,19 @@ final class QuizModelsTests: XCTestCase {
         XCTAssertEqual(decoded.questions[0].image, image)
     }
 
+    func testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ() throws {
+        let json = #"{"version":1,"id":"saq","title":"Written","type":"saq","questions":[{"id":"q1","question":"Explain photosynthesis.","hints":[],"explanation":"Mention light, water, and carbon dioxide."}]}"#
+        let set = try QuizCodec.decode(Data(json.utf8))
+        XCTAssertEqual(set.type, .saq)
+        XCTAssertTrue(set.questions[0].choices.isEmpty)
+        let roundTrip = try QuizCodec.decode(QuizCodec.encode(set))
+        XCTAssertEqual(roundTrip, set)
+        let sample = try TestFixtures.sampleSet()
+        XCTAssertEqual(sample.type, .mcq)
+        XCTAssertThrowsError(try QuizSet(version: 1, id: "bad", title: "Bad", description: nil,
+                                         questions: [TestFixtures.question()], type: .saq).validate())
+    }
+
     private func assertInvalid(
         _ set: QuizSet,
         contains expectedText: String,

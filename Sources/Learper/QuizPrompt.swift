@@ -21,11 +21,14 @@ enum QuizPrompt {
         topic: String,
         questionCount: Int,
         difficulty: QuizDifficulty,
+        type: QuizType = .mcq,
         format: String
     ) -> String {
         format
             .replacingOccurrences(of: "[number]", with: String(questionCount))
             .replacingOccurrences(of: "[difficulty]", with: difficulty.rawValue.lowercased())
+            .replacingOccurrences(of: "[quiz type]", with: type == .mcq ? "multiple-choice" : "short-answer")
+            .replacingOccurrences(of: "[quiz type id]", with: type.rawValue)
             .replacingOccurrences(of: "[topic or supplied notes]", with: topic.trimmed)
     }
 }

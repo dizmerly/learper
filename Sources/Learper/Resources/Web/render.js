@@ -18,7 +18,12 @@ markdown.disable('image');
 
 const codeFence = markdown.renderer.rules.fence;
 markdown.renderer.rules.fence = function (tokens, index, options, env, renderer) {
-  if (tokens[index].info.trim().toLowerCase() === 'graph') {
+  const language = tokens[index].info.trim().toLowerCase();
+  if (language === 'mermaid') {
+    const number = env.mermaidSources.push(tokens[index].content) - 1;
+    return `<figure class="mermaid-diagram" data-mermaid-index="${number}"><div class="mermaid-scroll">Rendering diagram…</div></figure>`;
+  }
+  if (language === 'graph') {
     return window.LearperGraph.render(tokens[index].content);
   }
   return codeFence(tokens, index, options, env, renderer);
@@ -28,6 +33,47 @@ let heightFrame = null;
 let lastHeight = -1;
 let lastSource = null;
 let lastSize = null;
+let renderGeneration = 0;
+let mermaidSequence = Promise.resolve();
+let mermaidLoad;
+
+function loadMermaid() {
+  if (window.LearperMermaid) return Promise.resolve();
+  if (!mermaidLoad) {
+    mermaidLoad = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'vendor/mermaid/mermaid.min.js';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('The bundled Mermaid renderer could not be loaded.'));
+      document.head.appendChild(script);
+    });
+  }
+  return mermaidLoad;
+}
+
+function renderMermaid(root, sources, generation) {
+  sources.forEach((source, index) => {
+    const container = root.querySelector(`[data-mermaid-index="${index}"] .mermaid-scroll`);
+    mermaidSequence = mermaidSequence.catch(() => {}).then(async () => {
+      const renderID = `learper-rich-${generation}-${index}`;
+      try {
+        await loadMermaid();
+        const result = await window.LearperMermaid.render(renderID, source);
+        if (generation !== renderGeneration || !container.isConnected) return;
+        container.innerHTML = result.svg;
+      } catch (failure) {
+        document.getElementById(`d${renderID}`)?.remove();
+        if (generation !== renderGeneration || !container.isConnected) return;
+        container.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'mermaid-error';
+        message.textContent = `Diagram error: ${failure.message || 'Invalid Mermaid syntax'}`;
+        container.appendChild(message);
+      }
+      reportHeight();
+    });
+  });
+}
 
 function contentHeight() {
   // Measure content, not the viewport: scrollHeight cannot reliably shrink after
@@ -56,7 +102,8 @@ function render(source, size) {
   }
   lastSource = source;
   const root = document.getElementById('content');
-  root.innerHTML = markdown.render(source);
+  const environment = { mermaidSources: [] };
+  root.innerHTML = markdown.render(source, environment);
   window.renderMathInElement(root, {
     delimiters: [
       { left: '$$', right: '$$', display: true },
@@ -66,6 +113,7 @@ function render(source, size) {
     throwOnError: false,
     trust: false
   });
+  renderMermaid(root, environment.mermaidSources, ++renderGeneration);
   reportHeight();
 }
 

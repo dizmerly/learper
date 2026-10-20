@@ -49,7 +49,7 @@ enum SmokeTest {
         let graphData = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))
         let graphQuiz = try QuizCodec.decode(graphData)
         precondition(graphQuiz.questions.count == 3)
-        precondition(graphQuiz.questions.allSatisfy { $0.description?.contains("```graph") == true })
+        precondition(graphQuiz.questions.allSatisfy { $0.description?.contains("```mermaid") == true })
         let roundTrippedGraphQuiz = try QuizCodec.decode(QuizCodec.encode(graphQuiz))
         precondition(roundTrippedGraphQuiz == graphQuiz)
         try library.importData(graphData)

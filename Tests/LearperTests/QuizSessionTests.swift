@@ -114,4 +114,47 @@ final class QuizSessionTests: XCTestCase {
         XCTAssertTrue(session.outcomes.isEmpty)
         XCTAssertEqual(session.accuracyPercent, 0)
     }
+
+    func testShortAnswerCompletionAndGradingPrompt() throws {
+        let questions = [
+            QuizQuestion(id: "one", question: "Explain gravity.", hints: [], explanation: "Mention attraction."),
+            QuizQuestion(id: "two", question: "Give an example.", hints: [])
+        ]
+        let set = QuizSet(version: 1, id: "written", title: "Physics", description: nil,
+                          questions: questions, type: .saq)
+        try set.validate()
+        var session = QuizSession(quizSet: set)
+        session.updateDraft("   ")
+        session.submit()
+        XCTAssertFalse(session.hasSubmitted)
+        session.updateDraft("Masses attract each other.")
+        session.submit()
+        XCTAssertTrue(session.hasSubmitted)
+        XCTAssertEqual(session.correctCount, 0)
+        session.advance()
+        session.updateDraft("An apple falling.")
+        session.primaryAction()
+        session.primaryAction()
+        XCTAssertTrue(session.showingResults)
+        XCTAssertTrue(session.gradingPrompt.contains("Question 1: Explain gravity."))
+        XCTAssertTrue(session.gradingPrompt.contains("Student answer: Masses attract each other."))
+        XCTAssertTrue(session.gradingPrompt.contains("Reference answer or grading guidance: Mention attraction."))
+        XCTAssertTrue(session.gradingPrompt.contains("Question 2: Give an example."))
+        session.restart()
+        XCTAssertEqual(session.gradingPrompt, "")
+        XCTAssertTrue(session.answers.isEmpty)
+    }
+
+    func testRenamingQuizKeepsSessionAnswers() throws {
+        let original = try TestFixtures.sampleSet()
+        var session = QuizSession(quizSet: original)
+        session.select("b")
+        session.submit()
+        let renamed = QuizSet(version: original.version, id: original.id, title: "New name",
+                              description: original.description, questions: original.questions, type: original.type)
+        session.refreshMetadata(from: renamed)
+        XCTAssertEqual(session.quizSet.title, "New name")
+        XCTAssertEqual(session.correctCount, 1)
+        XCTAssertTrue(session.hasSubmitted)
+    }
 }

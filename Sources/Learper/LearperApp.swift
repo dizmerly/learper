@@ -8,6 +8,7 @@ struct LearperApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(library)
+                .preferredColorScheme(.dark)
                 .frame(minWidth: 880, minHeight: 660)
         }
         .windowStyle(.titleBar)

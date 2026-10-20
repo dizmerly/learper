@@ -22,12 +22,21 @@ final class QuizPromptTests: XCTestCase {
         XCTAssertTrue(prompt.contains("\"correctAnswerId\""))
         XCTAssertTrue(prompt.contains("\"explanation\""))
         XCTAssertTrue(prompt.contains("\"hints\""))
-        XCTAssertTrue(prompt.contains("fenced `graph` block"))
-        XCTAssertTrue(prompt.contains("inline LaTeX"))
+        XCTAssertTrue(prompt.contains("fenced `mermaid` blocks"))
+        XCTAssertTrue(prompt.contains("LaTeX"))
         XCTAssertTrue(prompt.contains("does not fetch or display images"))
+        XCTAssertTrue(prompt.contains("\"type\": \"mcq\""))
         XCTAssertFalse(prompt.contains("[topic or supplied notes]"))
         XCTAssertFalse(prompt.contains("[number]"))
         XCTAssertFalse(prompt.contains("[difficulty]"))
+    }
+
+    func testShortAnswerPromptSelectsSAQFormat() throws {
+        let prompt = QuizPrompt.make(topic: "Photosynthesis", questionCount: 4,
+                                     difficulty: .mixed, type: .saq, format: try bundledFormat())
+        XCTAssertTrue(prompt.contains("Create a Learper v1 short-answer quiz"))
+        XCTAssertTrue(prompt.contains("\"type\": \"saq\""))
+        XCTAssertTrue(prompt.contains("SAQ questions have no `choices`"))
     }
 
     func testBundledFormatMatchesDocumentedFormat() throws {

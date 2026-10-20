@@ -45,7 +45,7 @@ private struct GraphEditorWebView: NSViewRepresentable {
     }
 
     final class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-        private let draftKey = "Learper.graphDraft"
+        private let draftKey = "Learper.mermaidDraft"
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             guard let draft = UserDefaults.standard.string(forKey: draftKey),

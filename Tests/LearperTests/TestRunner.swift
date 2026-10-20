@@ -13,6 +13,7 @@ enum TestRunner {
             ]),
             testCase([
                 ("testGeneratedPromptIncludesCompleteFormatAndUserOptions", QuizPromptTests.testGeneratedPromptIncludesCompleteFormatAndUserOptions),
+                ("testShortAnswerPromptSelectsSAQFormat", QuizPromptTests.testShortAnswerPromptSelectsSAQFormat),
                 ("testBundledFormatMatchesDocumentedFormat", QuizPromptTests.testBundledFormatMatchesDocumentedFormat)
             ]),
             testCase([
@@ -21,7 +22,8 @@ enum TestRunner {
                 ("testRejectsDuplicateQuestionIDsAndMissingQuestionText", QuizModelsTests.testRejectsDuplicateQuestionIDsAndMissingQuestionText),
                 ("testRejectsChoiceCountDuplicateIDsAndBadAnswer", QuizModelsTests.testRejectsChoiceCountDuplicateIDsAndBadAnswer),
                 ("testRejectsMalformedJSONAndMissingRequiredHints", QuizModelsTests.testRejectsMalformedJSONAndMissingRequiredHints),
-                ("testAcceptsReservedImageMetadataWithoutRequiringIt", QuizModelsTests.testAcceptsReservedImageMetadataWithoutRequiringIt)
+                ("testAcceptsReservedImageMetadataWithoutRequiringIt", QuizModelsTests.testAcceptsReservedImageMetadataWithoutRequiringIt),
+                ("testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ", QuizModelsTests.testShortAnswerDecodesWithoutChoicesAndKeepsLegacyMCQ)
             ]),
             testCase([
                 ("testCannotSubmitOrAdvanceWithoutAnswer", QuizSessionTests.testCannotSubmitOrAdvanceWithoutAnswer),
@@ -29,7 +31,9 @@ enum TestRunner {
                 ("testWrongAnswerLocksSelectionAndCountsCorrectly", QuizSessionTests.testWrongAnswerLocksSelectionAndCountsCorrectly),
                 ("testCompletionAndRetry", QuizSessionTests.testCompletionAndRetry),
                 ("testNumberKeysAndSpaceActionFollowQuizState", QuizSessionTests.testNumberKeysAndSpaceActionFollowQuizState),
-                ("testStatisticsIdentifyMissedQuestionAndSelectedAnswer", QuizSessionTests.testStatisticsIdentifyMissedQuestionAndSelectedAnswer)
+                ("testStatisticsIdentifyMissedQuestionAndSelectedAnswer", QuizSessionTests.testStatisticsIdentifyMissedQuestionAndSelectedAnswer),
+                ("testShortAnswerCompletionAndGradingPrompt", QuizSessionTests.testShortAnswerCompletionAndGradingPrompt),
+                ("testRenamingQuizKeepsSessionAnswers", QuizSessionTests.testRenamingQuizKeepsSessionAnswers)
             ]),
             testCase([
                 ("testImportPersistsAndReplacesMatchingID", QuizLibraryTests.testImportPersistsAndReplacesMatchingID),
@@ -38,7 +42,8 @@ enum TestRunner {
                 ("testCorruptLibraryReportsLoadError", QuizLibraryTests.testCorruptLibraryReportsLoadError),
                 ("testRemovingLastSetLeavesAnEmptySavedLibrary", QuizLibraryTests.testRemovingLastSetLeavesAnEmptySavedLibrary),
                 ("testSaveFailureDoesNotChangeInMemoryLibrary", QuizLibraryTests.testSaveFailureDoesNotChangeInMemoryLibrary),
-                ("testImportsStandaloneChatbotJSONFile", QuizLibraryTests.testImportsStandaloneChatbotJSONFile)
+                ("testImportsStandaloneChatbotJSONFile", QuizLibraryTests.testImportsStandaloneChatbotJSONFile),
+                ("testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection", QuizLibraryTests.testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection)
             ])
         ])
     }

@@ -73,20 +73,22 @@ final class WebCheck: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         if stage == 0 {
-            let fixture = "# Directed paths\n```graph\na>b>c\nb>d>e\n```\nA cycle with a self-loop:\n```graph\na>b>c>a\nb>b\n```\nInline math: $x^2$.\n```python\nprint(42)\n```\n```graph\na >\n```"
+            let fixture = "# Directed paths\n```graph\na>b>c\nb>d>e\n```\nMermaid:\n```mermaid\nflowchart LR\n  A --> B\n```\nInline math: $x^2$.\n```python\nprint(42)\n```\n```graph\na >\n```\n```mermaid\ninvalid diagram\n```"
             let encoded = String(data: try! JSONEncoder().encode(fixture), encoding: .utf8)!
             check("""
                 (() => {
                   render(\(encoded), 16);
                   const diagrams = document.querySelectorAll('.graph-diagram svg');
                   const ids = [...document.querySelectorAll('marker')].map(marker => marker.id);
-                  return diagrams.length === 2 && diagrams[0].querySelectorAll('.vertex').length === 5 &&
+                  return diagrams.length === 1 && diagrams[0].querySelectorAll('.vertex').length === 5 &&
                     diagrams[0].querySelectorAll('.edge').length === 4 && new Set(ids).size === ids.length &&
                     document.querySelectorAll('.graph-error').length === 1 &&
                     document.querySelectorAll('.katex').length > 0 && document.querySelectorAll('.hljs-number').length > 0;
                 })()
                 """) {
-                self.snapshot("graph-richtext") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                  self.check("document.querySelector('.mermaid-diagram svg') !== null && document.querySelector('.mermaid-error') !== null && !document.querySelector('[id^=dlearper-rich]')") {
+                    self.snapshot("graph-richtext") {
                     self.check("""
                         (() => {
                           const source = 'Inline math: $x^2$.\\n'.repeat(40);
@@ -105,26 +107,35 @@ final class WebCheck: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
                         self.stage = 1
                         webView.loadFileURL(webRoot.appendingPathComponent("graph-editor.html"), allowingReadAccessTo: webRoot)
                     }
+                    }
+                  }
                 }
             }
         } else {
-            check("""
-                (() => {
-                  setGraphSource('a>b>c\\nb>d>e');
-                  const valid = document.querySelectorAll('#preview .vertex').length === 5 && !exportButton.disabled;
-                  copyButton.click(); exportButton.click();
-                  setGraphSource('a >');
-                  const invalid = exportButton.disabled && copyButton.disabled && !error.hidden && preview.childElementCount === 0;
-                  document.querySelector('[data-example="undirected"]').click();
-                  return valid && invalid && document.querySelectorAll('#preview .vertex').length === 5;
-                })()
-                """) {
-                self.snapshot("graph-editor") {
-                    guard self.actions["copy"] == "```graph\na>b>c\nb>d>e\n```",
-                          self.actions["export"]?.hasPrefix("<svg") == true,
-                          self.actions["draft"]?.contains("a -- b") == true else { fail("Copy, export, or saved draft bridge did not match editor content") }
-                    print("WebKit rich text, math/code coexistence, live editor, copy/export, and draft checks passed")
-                    exit(0)
+            webView.evaluateJavaScript("setGraphSource('flowchart LR\\n  A --> B')") { _, error in
+                if let error { fail(error.localizedDescription) }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.check("document.querySelector('#preview svg') !== null && !exportButton.disabled") {
+                        self.check("copyButton.click(); exportButton.click(); setGraphSource('invalid diagram'); true") {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                self.check("exportButton.disabled && copyButton.disabled && !error.hidden && !document.querySelector('[id^=dlearper-editor]')") {
+                                    self.check("document.querySelector('[data-example=flowchart]').click(); true") {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                            self.check("document.querySelector('#preview svg') !== null && !exportButton.disabled") {
+                                                self.snapshot("graph-editor") {
+                                                    guard self.actions["copy"] == "```mermaid\nflowchart LR\n  A --> B\n```",
+                                                          self.actions["export"]?.hasPrefix("<svg") == true,
+                                                          self.actions["draft"]?.contains("flowchart LR") == true else { fail("Mermaid copy, export, or draft bridge did not match editor content") }
+                                                    print("WebKit Mermaid rendering, rich text, live editor, copy/export, and draft checks passed")
+                                                    exit(0)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -135,5 +146,5 @@ let application = NSApplication.shared
 application.setActivationPolicy(.prohibited)
 let webCheck = WebCheck()
 webCheck.start()
-DispatchQueue.main.asyncAfter(deadline: .now() + 30) { fail("WebKit checks timed out") }
+DispatchQueue.main.asyncAfter(deadline: .now() + 60) { fail("WebKit checks timed out") }
 application.run()

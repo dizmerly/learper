@@ -105,6 +105,20 @@ final class QuizLibraryTests: XCTestCase {
         XCTAssertNil(library.selectedSet?.questions[0].description)
     }
 
+    func testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection() throws {
+        let url = TestFixtures.temporaryLibraryURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let library = try emptyLibrary(at: url)
+        try library.importData(QuizCodec.encode(TestFixtures.set(id: "first", title: "First")))
+        try library.importData(QuizCodec.encode(TestFixtures.set(id: "second", title: "Second")))
+        library.renameSet(id: "first", to: "  Renamed  ")
+        XCTAssertEqual(library.sets.first(where: { $0.id == "first" })?.title, "Renamed")
+        XCTAssertEqual(library.selectedSetID, "second")
+        library.removeSet(id: "first")
+        XCTAssertEqual(library.selectedSetID, "second")
+        XCTAssertEqual(QuizLibrary(storageURL: url).sets.map(\.id), ["second"])
+    }
+
     private func emptyLibrary(at url: URL) throws -> QuizLibrary {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("[]".utf8).write(to: url)

@@ -1,18 +1,29 @@
 {
   "version": 1,
   "id": "learper-graph-theory",
-  "title": "Graphs from text",
-  "description": "Explore directed paths, cycles, and weighted edges drawn locally from text.",
+  "title": "Mermaid graph theory",
+  "description": "Explore paths, cycles, and weighted edges rendered offline with Mermaid.",
   "questions": [
     {
       "id": "branch",
       "question": "What is the out-degree of vertex b?",
-      "description": "```graph\na > b > c\nb > d > e\n```",
-      "hints": ["Count only the arrows leaving b, not those entering it."],
+      "description": "```mermaid\nflowchart LR\n  a --> b --> c\n  b --> d --> e\n```",
+      "hints": [
+        "Count only the arrows leaving b, not those entering it."
+      ],
       "choices": [
-        { "id": "a", "text": "1" },
-        { "id": "b", "text": "2" },
-        { "id": "c", "text": "3" }
+        {
+          "id": "a",
+          "text": "1"
+        },
+        {
+          "id": "b",
+          "text": "2"
+        },
+        {
+          "id": "c",
+          "text": "3"
+        }
       ],
       "correctAnswerId": "b",
       "explanation": "Vertex b has two outgoing edges: b → c and b → d. The edge a → b is incoming."
@@ -20,12 +31,23 @@
     {
       "id": "cycle",
       "question": "Which path is a directed cycle?",
-      "description": "```graph\na > b > c > a\nc > d\n```",
-      "hints": ["A cycle follows the arrow directions and returns to its starting vertex."],
+      "description": "```mermaid\nflowchart LR\n  a --> b --> c --> a\n  c --> d\n```",
+      "hints": [
+        "A cycle follows the arrow directions and returns to its starting vertex."
+      ],
       "choices": [
-        { "id": "a", "text": "a → b → c → a" },
-        { "id": "b", "text": "a → c → b → a" },
-        { "id": "c", "text": "b → c → d" }
+        {
+          "id": "a",
+          "text": "a → b → c → a"
+        },
+        {
+          "id": "b",
+          "text": "a → c → b → a"
+        },
+        {
+          "id": "c",
+          "text": "b → c → d"
+        }
       ],
       "correctAnswerId": "a",
       "explanation": "The edges a → b, b → c, and c → a form a directed cycle. Vertex d has no outgoing edges."
@@ -33,15 +55,27 @@
     {
       "id": "weighted",
       "question": "What is the total weight of the path Start → Middle → End?",
-      "description": "```graph\n\"Start\" -- \"Middle\" : 3\n\"Middle\" -- \"End\" : 5\n\"Start\" -- \"End\" : 10\n```",
-      "hints": ["Add the weights of the two edges used by that path."],
+      "description": "```mermaid\nflowchart LR\n  Start ---|3| Middle\n  Middle ---|5| End\n  Start ---|10| End\n```",
+      "hints": [
+        "Add the weights of the two edges used by that path."
+      ],
       "choices": [
-        { "id": "a", "text": "5" },
-        { "id": "b", "text": "8" },
-        { "id": "c", "text": "10" }
+        {
+          "id": "a",
+          "text": "5"
+        },
+        {
+          "id": "b",
+          "text": "8"
+        },
+        {
+          "id": "c",
+          "text": "10"
+        }
       ],
       "correctAnswerId": "b",
       "explanation": "The path uses edges of weights 3 and 5, totaling 8. The direct edge from Start to End has weight 10."
     }
-  ]
+  ],
+  "type": "mcq"
 }

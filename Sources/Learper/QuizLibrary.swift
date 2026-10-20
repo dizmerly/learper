@@ -66,11 +66,35 @@ final class QuizLibrary: ObservableObject {
 
     func removeSelectedSet() {
         guard let selectedSetID else { return }
-        let updated = sets.filter { $0.id != selectedSetID }
+        removeSet(id: selectedSetID)
+    }
+
+    func removeSet(id: String) {
+        guard sets.contains(where: { $0.id == id }) else { return }
+        let updated = sets.filter { $0.id != id }
         do {
             try save(updated)
             sets = updated
-            self.selectedSetID = updated.first?.id
+            if selectedSetID == id { selectedSetID = updated.first?.id }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func renameSet(id: String, to title: String) {
+        let title = title.trimmed
+        guard !title.isEmpty else {
+            errorMessage = "Enter a quiz name."
+            return
+        }
+        guard let index = sets.firstIndex(where: { $0.id == id }) else { return }
+        var updated = sets
+        let old = updated[index]
+        updated[index] = QuizSet(version: old.version, id: old.id, title: title,
+                                 description: old.description, questions: old.questions, type: old.type)
+        do {
+            try save(updated)
+            sets = updated
         } catch {
             errorMessage = error.localizedDescription
         }

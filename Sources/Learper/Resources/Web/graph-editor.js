@@ -7,6 +7,8 @@ const exportButton = document.getElementById('export');
 const status = document.getElementById('status');
 let currentSVG = '';
 let pendingRender;
+let generation = 0;
+let renderSequence = Promise.resolve();
 
 function send(action, text) {
   const handler = window.webkit?.messageHandlers?.graphAction;
@@ -16,24 +18,37 @@ function send(action, text) {
 }
 
 function updateGraph(save = true) {
+  const text = source.value.trim();
+  const ticket = ++generation;
   clearTimeout(pendingRender);
   status.textContent = '';
-  try {
-    const graph = LearperGraph.parse(source.value);
-    currentSVG = LearperGraph.svg(graph);
-    preview.innerHTML = currentSVG;
-    document.getElementById('counts').textContent = `${graph.nodes.length} vertices · ${graph.edges.length} edges`;
-    error.hidden = true;
-    copyButton.disabled = exportButton.disabled = false;
-  } catch (failure) {
-    currentSVG = '';
-    preview.replaceChildren();
-    document.getElementById('counts').textContent = '';
-    error.textContent = failure.message;
-    error.hidden = false;
-    copyButton.disabled = exportButton.disabled = true;
-  }
+  currentSVG = '';
+  copyButton.disabled = exportButton.disabled = true;
   if (save) send('draft', source.value);
+  if (!text) {
+    preview.replaceChildren();
+    error.textContent = 'Enter Mermaid diagram text.';
+    error.hidden = false;
+    return;
+  }
+  renderSequence = renderSequence.catch(() => {}).then(async () => {
+    const renderID = `learper-editor-${ticket}`;
+    try {
+      const result = await LearperMermaid.render(renderID, text);
+      if (ticket !== generation) return;
+      currentSVG = result.svg;
+      preview.innerHTML = currentSVG;
+      error.hidden = true;
+      copyButton.disabled = exportButton.disabled = false;
+    } catch (failure) {
+      // Mermaid 10 leaves its temporary error diagram attached to the body.
+      document.getElementById(`d${renderID}`)?.remove();
+      if (ticket !== generation) return;
+      preview.replaceChildren();
+      error.textContent = failure.message || 'Could not render this Mermaid diagram.';
+      error.hidden = false;
+    }
+  });
 }
 
 function setGraphSource(text) {
@@ -42,23 +57,23 @@ function setGraphSource(text) {
 }
 
 source.addEventListener('input', () => {
-  // Invalidate export immediately while the preview catches up with typing.
   copyButton.disabled = exportButton.disabled = true;
   send('draft', source.value);
   clearTimeout(pendingRender);
-  pendingRender = setTimeout(() => updateGraph(false), 120);
+  pendingRender = setTimeout(() => updateGraph(false), 180);
 });
+
 const examples = {
-  branch: 'a > b > c\nb > d > e',
-  cycle: 'a > b > c > a\nb > b',
-  undirected: 'a -- b -- c -- a\nb -- d\nz'
+  flowchart: 'flowchart LR\n  A[Start] --> B{Ready?}\n  B -- Yes --> C[Continue]\n  B -- No --> A',
+  sequence: 'sequenceDiagram\n  Student->>Tutor: Submit answer\n  Tutor-->>Student: Feedback',
+  class: 'classDiagram\n  Quiz --> Question\n  Question : +String prompt\n  Question : +String answer'
 };
 document.querySelectorAll('[data-example]').forEach(button => button.addEventListener('click', () => {
   source.value = examples[button.dataset.example];
   updateGraph();
 }));
 copyButton.addEventListener('click', () => {
-  if (send('copy', '```graph\n' + source.value.trim() + '\n```')) status.textContent = 'Graph block copied.';
+  if (send('copy', '```mermaid\n' + source.value.trim() + '\n```')) status.textContent = 'Mermaid block copied.';
 });
 exportButton.addEventListener('click', () => send('export', currentSVG));
 updateGraph(false);
