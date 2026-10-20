@@ -147,6 +147,16 @@ final class QuizLibrary: ObservableObject {
     }
 
     @discardableResult
+    func moveDroppedSet(_ value: String, to groupID: String?) -> Bool {
+        let prefix = "learper-quiz:"
+        guard value.hasPrefix(prefix) else { return false }
+        let id = String(value.dropFirst(prefix.count))
+        guard let set = sets.first(where: { $0.id == id }), set.groupID != groupID else { return false }
+        moveSet(id: id, to: groupID)
+        return sets.first(where: { $0.id == id })?.groupID == groupID
+    }
+
+    @discardableResult
     func rateQuestion(setID: String, questionID: String, rating: PracticeRating) -> Double? {
         guard let setIndex = sets.firstIndex(where: { $0.id == setID }),
               let questionIndex = sets[setIndex].questions.firstIndex(where: { $0.id == questionID }) else { return nil }

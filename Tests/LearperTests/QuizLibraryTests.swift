@@ -152,6 +152,26 @@ final class QuizLibraryTests: XCTestCase {
         XCTAssertEqual(reopened.sets[0].questions[0].weight, 1.5)
     }
 
+    func testDroppedQuizMovesBetweenFoldersAndUngrouped() throws {
+        let url = TestFixtures.temporaryLibraryURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let library = try emptyLibrary(at: url)
+        try library.importData(QuizCodec.encode(TestFixtures.set(id: "quiz")))
+        library.createGroup(named: "First")
+        library.createGroup(named: "Second")
+        let first = library.groups[0].id, second = library.groups[1].id
+        XCTAssertFalse(library.moveDroppedSet("unrelated text", to: first))
+        XCTAssertFalse(library.moveDroppedSet("learper-quiz:missing", to: first))
+        XCTAssertFalse(library.moveDroppedSet("learper-quiz:quiz", to: "missing"))
+        XCTAssertTrue(library.moveDroppedSet("learper-quiz:quiz", to: first))
+        XCTAssertFalse(library.moveDroppedSet("learper-quiz:quiz", to: first))
+        XCTAssertTrue(library.moveDroppedSet("learper-quiz:quiz", to: second))
+        XCTAssertEqual(QuizLibrary(storageURL: url).sets[0].groupID, second)
+        XCTAssertTrue(library.moveDroppedSet("learper-quiz:quiz", to: nil))
+        XCTAssertNil(QuizLibrary(storageURL: url).sets[0].groupID)
+        XCTAssertEqual(library.groups.count, 2)
+    }
+
     private func emptyLibrary(at url: URL) throws -> QuizLibrary {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("[]".utf8).write(to: url)

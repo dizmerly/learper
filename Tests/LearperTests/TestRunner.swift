@@ -53,7 +53,8 @@ enum TestRunner {
                 ("testSaveFailureDoesNotChangeInMemoryLibrary", QuizLibraryTests.testSaveFailureDoesNotChangeInMemoryLibrary),
                 ("testImportsStandaloneChatbotJSONFile", QuizLibraryTests.testImportsStandaloneChatbotJSONFile),
                 ("testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection", QuizLibraryTests.testRenameAndDeleteSpecificQuizPersistWithoutChangingOtherSelection),
-                ("testLegacyLibraryMigratesFoldersAndWeightsPersist", QuizLibraryTests.testLegacyLibraryMigratesFoldersAndWeightsPersist)
+                ("testLegacyLibraryMigratesFoldersAndWeightsPersist", QuizLibraryTests.testLegacyLibraryMigratesFoldersAndWeightsPersist),
+                ("testDroppedQuizMovesBetweenFoldersAndUngrouped", QuizLibraryTests.testDroppedQuizMovesBetweenFoldersAndUngrouped)
             ])
         ])
     }

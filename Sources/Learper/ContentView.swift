@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 private enum Palette {
     static let purple = Color(red: 0.70, green: 0.50, blue: 0.96)
@@ -241,7 +242,7 @@ struct ContentView: View {
             .padding(.horizontal, 22)
 
             ScrollView {
-                LazyVStack(spacing: 7) {
+                VStack(spacing: 7) {
                     ForEach(library.groups) { group in
                         folderRow(group)
                         if expandedGroupIDs.contains(group.id) {
@@ -272,9 +273,9 @@ struct ContentView: View {
                     .contentShape(Rectangle())
                     .background(ungroupedIsTargeted ? Palette.purple.opacity(0.22) : .clear,
                                 in: RoundedRectangle(cornerRadius: 10))
-                    .dropDestination(for: String.self) { items, _ in
-                        moveDroppedQuiz(items, to: nil)
-                    } isTargeted: { ungroupedIsTargeted = $0 }
+                    .onDrop(of: [UTType.plainText], isTargeted: $ungroupedIsTargeted) { providers in
+                        acceptDroppedQuiz(providers, to: nil)
+                    }
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -340,9 +341,12 @@ struct ContentView: View {
         .background(targetedGroupID == group.id ? Palette.purple.opacity(0.28) :
                     destination == .group(group.id) ? Palette.purple.opacity(0.14) : .clear,
                     in: RoundedRectangle(cornerRadius: 13))
-        .dropDestination(for: String.self) { items, _ in
-            moveDroppedQuiz(items, to: group.id)
-        } isTargeted: { targetedGroupID = $0 ? group.id : nil }
+        .onDrop(of: [UTType.plainText], isTargeted: Binding(
+            get: { targetedGroupID == group.id },
+            set: { targetedGroupID = $0 ? group.id : nil }
+        )) { providers in
+            acceptDroppedQuiz(providers, to: group.id)
+        }
         .contextMenu {
             Button("Practice Folder") { openGroup(group) }
             Button("Rename Folder") { editFolder(group) }
@@ -351,30 +355,29 @@ struct ContentView: View {
     }
 
     private func quizRow(_ set: QuizSet) -> some View {
-        Button { openQuiz(id: set.id) } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "rectangle.stack.fill")
-                    .foregroundStyle(destination == .quiz && set.id == library.selectedSetID ? Palette.purple : .secondary)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(set.title)
-                        .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(2)
-                    Text("\(set.questionCount) questions")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
+        HStack(spacing: 12) {
+            Image(systemName: "rectangle.stack.fill")
+                .foregroundStyle(destination == .quiz && set.id == library.selectedSetID ? Palette.purple : .secondary)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(set.title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(2)
+                Text("\(set.questionCount) questions")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 13)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .background(destination == .quiz && set.id == library.selectedSetID ? Palette.purple.opacity(0.14) : .clear,
-                        in: RoundedRectangle(cornerRadius: 13))
         }
-        .buttonStyle(.plain)
-        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
-        .draggable("learper-quiz:\(set.id)")
+        .background(destination == .quiz && set.id == library.selectedSetID ? Palette.purple.opacity(0.14) : .clear,
+                    in: RoundedRectangle(cornerRadius: 13))
+        .onTapGesture { openQuiz(id: set.id) }
+        .onDrag { NSItemProvider(object: "learper-quiz:\(set.id)" as NSString) }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { openQuiz(id: set.id) }
         .contextMenu {
             Button("Open") { openQuiz(id: set.id) }
             Button("Rename") {
@@ -395,11 +398,14 @@ struct ContentView: View {
         }
     }
 
-    private func moveDroppedQuiz(_ items: [String], to groupID: String?) -> Bool {
-        guard let value = items.first, value.hasPrefix("learper-quiz:") else { return false }
-        let id = String(value.dropFirst("learper-quiz:".count))
-        guard let set = library.sets.first(where: { $0.id == id }), set.groupID != groupID else { return false }
-        library.moveSet(id: id, to: groupID)
+    private func acceptDroppedQuiz(_ providers: [NSItemProvider], to groupID: String?) -> Bool {
+        guard let provider = providers.first(where: { $0.canLoadObject(ofClass: NSString.self) }) else { return false }
+        _ = provider.loadObject(ofClass: NSString.self) { value, _ in
+            guard let value = value as? String else { return }
+            DispatchQueue.main.async {
+                _ = library.moveDroppedSet(value, to: groupID)
+            }
+        }
         return true
     }
 
